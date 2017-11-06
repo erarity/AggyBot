@@ -107,7 +107,7 @@ async def color(ctx, col):
 
             # Members can only have one color, so check if they already have a color role and replace it.
             for i in sorted_roles[skills.position + 1: colors.position]:
-                if i in ctx.author.roles and i != col:
+                if i in ctx.author.roles and i != c:
                     await ctx.author.remove_roles(i)
 
             await ctx.message.add_reaction('✅')
