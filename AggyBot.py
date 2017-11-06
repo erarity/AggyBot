@@ -5,7 +5,7 @@ from discord.ext import commands
 
 bot = commands.Bot(command_prefix='>')
 
-react_timer = 7
+# react_timer = 7
 
 # Obtain the token
 with open('token.json') as token_file:
@@ -111,16 +111,9 @@ async def color(ctx, col):
                     await ctx.author.remove_roles(i)
 
             await ctx.message.add_reaction('✅')
-            await asyncio.sleep(react_timer)
-            await ctx.message.remove_reaction('✅', ctx.guild.me)
             return
 
     await ctx.message.add_reaction('❌')
-    await ctx.send('This is not a color, dingus.')
-    await asyncio.sleep(react_timer)
-    await ctx.message.remove_reaction('❌', ctx.guild.me)
-
-
 
 
 @bot.command()
@@ -134,12 +127,8 @@ async def addskill(ctx, skill):
         if s.name.lower() == skill.lower():
             await ctx.author.add_roles(s)
             await ctx.message.add_reaction('✅')
-            await asyncio.sleep(react_timer)
-            await ctx.message.remove_reaction('✅', ctx.guild.me)
             return
     await ctx.message.add_reaction('❌')
-    await asyncio.sleep(react_timer)
-    await ctx.message.remove_reaction('❌', ctx.guild.me)
 
 
 @bot.command()
@@ -148,8 +137,8 @@ async def removeskill(ctx, skill):
     target_role = discord.utils.get(ctx.guild.roles, name=skill)
     await ctx.author.remove_roles(target_role)
     await ctx.message.add_reaction('✅')
-    await asyncio.sleep(react_timer)
-    await ctx.message.remove_reaction('✅', ctx.guild.me)
+    # await asyncio.sleep(react_timer)
+    # await ctx.message.remove_reaction('✅', ctx.guild.me)
 
 
 @bot.command()
