@@ -49,44 +49,44 @@ async def on_command_error(ctx, err):
         await ctx.send('No Dice. Try: ``' + ctx.command.signature + '``')
 
 
-@bot.command()
-@commands.has_permissions(manage_roles=True)
-async def showroles(ctx):
-    await ctx.send('displaying all roles')
-    sorted_roles = sorted(ctx.guild.roles)
-    for i in sorted_roles:
-        await ctx.send('{}\t{}\t{}'.format(i.position, i.name, i.id))
+# @bot.command()
+# @commands.has_permissions(manage_roles=True)
+# async def showroles(ctx):
+#     await ctx.send('displaying all roles')
+#     sorted_roles = sorted(ctx.guild.roles)
+#     for i in sorted_roles:
+#         await ctx.send('{}\t{}\t{}'.format(i.position, i.name, i.id))
 
 
-@bot.command()
-@commands.has_permissions(manage_roles=True)
-async def showcolors(ctx):
-    # for role in ctx.guild.roles:
-    #     await ctx.send('{}-{}-{}'.format(role.name, role.position, role.id))
-    await ctx.send('displaying all colors')
-    colors = discord.utils.get(ctx.guild.roles, id=colorsID)
-    skills = discord.utils.get(ctx.guild.roles, id=skillsID)
-    if skills.position > colors.position:
-        raise RuntimeError
-    await ctx.send('positions are c{} and s{}'.format(colors.position, skills.position))
-    # sorted_roles = sorted(ctx.guild.roles, key=lambda role: role.position, reverse=True)
-    sorted_roles = sorted(ctx.guild.roles)
-    for i in sorted_roles[skills.position+1: colors.position]:
-        await ctx.send('{}-{}'.format(i.name, i.position))
+# @bot.command()
+# @commands.has_permissions(manage_roles=True)
+# async def showcolors(ctx):
+#     # for role in ctx.guild.roles:
+#     #     await ctx.send('{}-{}-{}'.format(role.name, role.position, role.id))
+#     await ctx.send('displaying all colors')
+#     colors = discord.utils.get(ctx.guild.roles, id=colorsID)
+#     skills = discord.utils.get(ctx.guild.roles, id=skillsID)
+#     if skills.position > colors.position:
+#         raise RuntimeError
+#     await ctx.send('positions are c{} and s{}'.format(colors.position, skills.position))
+#     # sorted_roles = sorted(ctx.guild.roles, key=lambda role: role.position, reverse=True)
+#     sorted_roles = sorted(ctx.guild.roles)
+#     for i in sorted_roles[skills.position+1: colors.position]:
+#         await ctx.send('{}-{}'.format(i.name, i.position))
 
 
-@bot.command()
-@commands.has_permissions(manage_roles=True)
-async def showskills(ctx):
-    await ctx.send('displaying all skills')
-    skills = discord.utils.get(ctx.guild.roles, id=skillsID)
-
-    await ctx.send('position is s{} and {}'.format(skills.position, 0))
-
-    # Iterate through the sublist
-    sorted_roles = sorted(ctx.guild.roles)
-    for s in sorted_roles[:skills.position]:
-        await ctx.send('{}-{}'.format(s.name, s.position))
+# @bot.command()
+# @commands.has_permissions(manage_roles=True)
+# async def showskills(ctx):
+#     await ctx.send('displaying all skills')
+#     skills = discord.utils.get(ctx.guild.roles, id=skillsID)
+#
+#     await ctx.send('position is s{} and {}'.format(skills.position, 0))
+#
+#     # Iterate through the sublist
+#     sorted_roles = sorted(ctx.guild.roles)
+#     for s in sorted_roles[:skills.position]:
+#         await ctx.send('{}-{}'.format(s.name, s.position))
 
 
 @bot.command()
@@ -99,16 +99,17 @@ async def color(ctx, col):
     # Sort the list.
     sorted_roles = sorted(ctx.guild.roles)
 
-    # Members can only have one color, so check if they already have a color role and replace it.
-    for i in sorted_roles[skills.position + 1: colors.position]:
-        if i in ctx.author.roles:
-            await ctx.author.remove_roles(i)
-
     # Iterate through the sublist
     for c in sorted_roles[skills.position + 1: colors.position]:
 
         if c.name.lower() == col.lower():
             await ctx.author.add_roles(c)
+
+            # Members can only have one color, so check if they already have a color role and replace it.
+            for i in sorted_roles[skills.position + 1: colors.position]:
+                if i in ctx.author.roles and i != col:
+                    await ctx.author.remove_roles(i)
+
             await ctx.message.add_reaction('✅')
             await asyncio.sleep(react_timer)
             await ctx.message.remove_reaction('✅', ctx.guild.me)
