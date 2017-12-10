@@ -134,9 +134,16 @@ async def addskill(ctx, skill):
 @bot.command()
 async def removeskill(ctx, skill):
     # await ctx.channel.send('Removing skill')
-    target_role = discord.utils.get(ctx.guild.roles, name=skill)
-    await ctx.author.remove_roles(target_role)
-    await ctx.message.add_reaction('✅')
+    #target_role = discord.utils.get(ctx.guild.roles, name=skill)
+    skills = discord.utils.get(ctx.guild.roles, id=226331683996172288)
+
+    sorted_roles = sorted(ctx.guild.roles)
+    for s in sorted_roles[:skills.position]:
+        if s.name.lower() == skill.lower():
+            await ctx.author.remove_roles(s)
+            await ctx.message.add_reaction('✅')
+            return
+    await ctx.message.add_reaction('❌')
     # await asyncio.sleep(react_timer)
     # await ctx.message.remove_reaction('✅', ctx.guild.me)
 
@@ -177,7 +184,7 @@ async def unjail(ctx, member: discord.Member):
 
 
 @bot.command()
-async def checkrole(ctx, arg1):
+async def checkrole(ctx, *, arg1):
     for role in ctx.guild.roles:
         if role.name.lower() == arg1.lower():
             await ctx.channel.send('There are {} users with the {} role.'.format(len(role.members), role.name))
