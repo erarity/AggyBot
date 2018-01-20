@@ -3,7 +3,7 @@ import json
 import asyncio
 from discord.ext import commands
 
-bot = commands.Bot(command_prefix='>')
+bot = commands.Bot(command_prefix='<')
 
 # react_timer = 7
 
@@ -49,13 +49,13 @@ async def on_command_error(ctx, err):
         await ctx.send('No Dice. Try: ``' + ctx.command.signature + '``')
 
 
-# @bot.command()
-# @commands.has_permissions(manage_roles=True)
-# async def showroles(ctx):
-#     await ctx.send('displaying all roles')
-#     sorted_roles = sorted(ctx.guild.roles)
-#     for i in sorted_roles:
-#         await ctx.send('{}\t{}\t{}'.format(i.position, i.name, i.id))
+@bot.command()
+@commands.has_permissions(manage_roles=True)
+async def showroles(ctx):
+    await ctx.send('displaying all roles')
+    sorted_roles = sorted(ctx.guild.roles)
+    for i in sorted_roles:
+        await ctx.send('{}\t{}\t{}'.format(i.position, i.name, i.id))
 
 
 # @bot.command()
