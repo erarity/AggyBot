@@ -218,7 +218,7 @@ async def progress(ctx, *, cont):
     #     b.seek(0)
     #     files.append(discord.File(b))  # I forget how this works exactly tbh
 
-    await prog_channel.send('Channel{0.channel}\tAuthor:{0.author}\n'.format(msg) + cont)
+    await prog_channel.send('\'\'Channel:\'\'{0.channel.mention}\t\'\'Author:\'\' {0.author.mention}\n'.format(msg) + cont)
     print("done")
 
 bot.run(token)
