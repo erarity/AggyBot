@@ -21,11 +21,13 @@ colorsID = role_data["colors"]
 skillsID = role_data["skills"]
 modID = role_data["moderator"]
 
-admin_channel = role_data["admin"]
-log_channel = role_data["botlog"]
-prog_channel = role_data["progress"]
+admin_chan_ID = role_data["admin"]
+log_chan_ID = role_data["botlog"]
+prog_chan_ID = role_data["progress"]
 
-
+admin_channel = None
+log_channel = None
+prog_channel = None
 
 @bot.event
 async def on_ready():
@@ -38,6 +40,16 @@ async def on_ready():
     # Obtain the guild
     agdg = bot.get_guild(121565307515961346)
     print('Targeted guild is {0.name}'.format(agdg))
+
+    # Fetch channel objects
+    admin_channel = discord.utils.get(agdg.channels, id=admin_chan_ID)
+    print('Identified admin channel.\tName:{0.name}\tID:{0.id}'.format(admin_channel))
+
+    log_channel = discord.utils.get(agdg.channels, id=prog_chan_ID)
+    print('Identified log channel.\tName:{0.name}\tID:{0.id}'.format(log_channel))
+
+    prog_channel = discord.utils.get(agdg.channels, id=prog_chan_ID)
+    print('Identified progress channel.\tName:{0.name}\tID:{0.id}'.format(prog_channel))
 
 
 @bot.event
