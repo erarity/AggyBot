@@ -210,6 +210,6 @@ async def progress(ctx, *, cont):
     #     files.append(discord.File(b))  # I forget how this works exactly tbh
 
     await prog_channel.send('Channel{}\tAuthor:{}\n'.format(msg.channel, msg.author) + cont)
-
+    print("done")
 
 bot.run(token)
