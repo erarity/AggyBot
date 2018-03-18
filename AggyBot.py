@@ -25,10 +25,6 @@ admin_chan_ID = role_data["admin"]
 log_chan_ID = role_data["botlog"]
 prog_chan_ID = role_data["progress"]
 
-admin_channel = None
-log_channel = None
-prog_channel = None
-
 @bot.event
 async def on_ready():
     print('Bot ready!')
@@ -47,9 +43,6 @@ async def on_ready():
 
     log_channel = discord.utils.get(agdg.channels, id=prog_chan_ID)
     print('Identified log channel.\tName:{0.name}\tID:{0.id}'.format(log_channel))
-
-    prog_channel = discord.utils.get(agdg.channels, id=prog_chan_ID)
-    print('Identified progress channel.\tName:{0.name}\tID:{0.id}'.format(prog_channel))
 
 
 @bot.event
@@ -211,6 +204,10 @@ async def checkrole(ctx, *, arg1):
 async def progress(ctx, *, cont):
 
     print("test")
+
+    prog_channel = discord.utils.get(ctx.guild.channels, id=prog_chan_ID)
+    print('Identified progress channel.\tName:{0.name}\tID:{0.id}'.format(prog_channel))
+
     msg = ctx.message
 
     # attachments
@@ -221,7 +218,7 @@ async def progress(ctx, *, cont):
     #     b.seek(0)
     #     files.append(discord.File(b))  # I forget how this works exactly tbh
 
-    await prog_channel.send('Channel{}\tAuthor:{}\n'.format(msg.channel, msg.author) + cont)
+    await prog_channel.send('Channel{0.channel}\tAuthor:{0.author}\n'.format(msg) + cont)
     print("done")
 
 bot.run(token)
