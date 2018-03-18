@@ -205,12 +205,22 @@ async def progress(ctx, *, cont):
 
     print("test")
 
+    # Ensure that there is either an embed, a link, or an attachment.
+    num_attach = len(ctx.message.attachments)
+    num_embed = len(ctx.message.embeds)
+    if num_attach < 1:
+        print("Number of attachments is 0.")
+    if num_embed < 1:
+        print("Number of embeds is 0.")
+
+
     prog_channel = discord.utils.get(ctx.guild.channels, id=prog_chan_ID)
     print('Identified progress channel.\tName:{0.name}\tID:{0.id}'.format(prog_channel))
 
     msg = ctx.message
 
-    # attachments
+    # Handle attachments
+
     # files = []
     # for attachment in message.attachments:
     #     b = io.bytesio()
@@ -218,7 +228,8 @@ async def progress(ctx, *, cont):
     #     b.seek(0)
     #     files.append(discord.File(b))  # I forget how this works exactly tbh
 
-    await prog_channel.send('\'\'Channel:\'\'{0.channel.mention}\t\'\'Author:\'\' {0.author.mention}\n'.format(msg) + cont)
+    await prog_channel.send(content='``Channel:`` {0.channel.mention}\t``Author:`` {0.author.mention}\n'.format(msg) +
+                                    cont)
     print("done")
 
 bot.run(token)
