@@ -1,6 +1,7 @@
 import discord
 import json
 import asyncio
+import io
 from discord.ext import commands
 
 bot = commands.Bot(command_prefix='>')
@@ -41,7 +42,7 @@ async def on_ready():
     admin_channel = discord.utils.get(agdg.channels, id=admin_chan_ID)
     print('Identified admin channel.\tName:{0.name}\tID:{0.id}'.format(admin_channel))
 
-    log_channel = discord.utils.get(agdg.channels, id=prog_chan_ID)
+    log_channel = discord.utils.get(agdg.channels, id=log_chan_ID)
     print('Identified log channel.\tName:{0.name}\tID:{0.id}'.format(log_channel))
 
 
@@ -203,8 +204,6 @@ async def checkrole(ctx, *, arg1):
 @commands.has_permissions(kick_members=True)
 async def progress(ctx, *, cont):
 
-    print("test")
-
     # Ensure that there is either an embed, a link, or an attachment.
     num_attach = len(ctx.message.attachments)
     num_embed = len(ctx.message.embeds)
@@ -213,20 +212,18 @@ async def progress(ctx, *, cont):
     if num_embed < 1:
         print("Number of embeds is 0.")
 
-
     prog_channel = discord.utils.get(ctx.guild.channels, id=prog_chan_ID)
     print('Identified progress channel.\tName:{0.name}\tID:{0.id}'.format(prog_channel))
 
     msg = ctx.message
 
     # Handle attachments
-
-    # files = []
-    # for attachment in message.attachments:
-    #     b = io.bytesio()
-    #     attachment.save(b)
-    #     b.seek(0)
-    #     files.append(discord.File(b))  # I forget how this works exactly tbh
+    files = []
+    for attach in msg.attachments:
+        b = io.bytesio()
+        attach.save(b)
+        b.seek(0)
+        files.append(discord.File(b))  # I forget how this works exactly tbh
 
     await prog_channel.send(content='``Channel:`` {0.channel.mention}\t``Author:`` {0.author.mention}\n'.format(msg) +
                                     cont)
