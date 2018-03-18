@@ -218,15 +218,15 @@ async def progress(ctx, *, cont):
     msg = ctx.message
 
     # Handle attachments
-    files = []
+    file_list = []
     for attach in msg.attachments:
         b = io.bytesio()
         attach.save(b)
         b.seek(0)
-        files.append(discord.File(b))  # I forget how this works exactly tbh
+        file_list.append(discord.File(b))  # I forget how this works exactly tbh
 
     await prog_channel.send(content='``Channel:`` {0.channel.mention}\t``Author:`` {0.author.mention}\n'.format(msg) +
-                                    cont)
+                                    cont, files=file_list)
     print("done")
 
 bot.run(token)
