@@ -21,6 +21,10 @@ colorsID = role_data["colors"]
 skillsID = role_data["skills"]
 modID = role_data["moderator"]
 
+admin_channel = role_data["admin"]
+log_channel = role_data["botlog"]
+prog_channel = role_data["progress"]
+
 
 
 @bot.event
@@ -188,6 +192,22 @@ async def checkrole(ctx, *, arg1):
     for role in ctx.guild.roles:
         if role.name.lower() == arg1.lower():
             await ctx.channel.send('There are {} users with the {} role.'.format(len(role.members), role.name))
+
+@bot.command()
+@commands.has_permissions(kick_members=True)
+async def progress(ctx, *, cont):
+
+    msg = ctx.message
+
+    #attachments
+    #files = []
+    #for attachment in message.attachments:
+    #    b = io.bytesio()
+    #    attachment.save(b)
+    #    b.seek(0)
+    #    files.append(discord.File(b))  # I forget how this works exactly tbh
+
+    await prog_channel.send('Channel{}\tAuthor:{}\n'.format(msg.channel, msg.author) + cont)
 
 
 bot.run(token)
