@@ -138,7 +138,7 @@ async def addskill(ctx, skill):
 @bot.command()
 async def removeskill(ctx, skill):
     # await ctx.channel.send('Removing skill')
-    #target_role = discord.utils.get(ctx.guild.roles, name=skill)
+    # target_role = discord.utils.get(ctx.guild.roles, name=skill)
     skills = discord.utils.get(ctx.guild.roles, id=226331683996172288)
 
     sorted_roles = sorted(ctx.guild.roles)
@@ -193,19 +193,21 @@ async def checkrole(ctx, *, arg1):
         if role.name.lower() == arg1.lower():
             await ctx.channel.send('There are {} users with the {} role.'.format(len(role.members), role.name))
 
+
 @bot.command()
 @commands.has_permissions(kick_members=True)
 async def progress(ctx, *, cont):
 
+    print("test")
     msg = ctx.message
 
-    #attachments
-    #files = []
-    #for attachment in message.attachments:
-    #    b = io.bytesio()
-    #    attachment.save(b)
-    #    b.seek(0)
-    #    files.append(discord.File(b))  # I forget how this works exactly tbh
+    # attachments
+    # files = []
+    # for attachment in message.attachments:
+    #     b = io.bytesio()
+    #     attachment.save(b)
+    #     b.seek(0)
+    #     files.append(discord.File(b))  # I forget how this works exactly tbh
 
     await prog_channel.send('Channel{}\tAuthor:{}\n'.format(msg.channel, msg.author) + cont)
 
