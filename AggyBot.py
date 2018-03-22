@@ -219,27 +219,22 @@ async def progress(ctx, *, cont):
     msg = ctx.message
 
     # Construct the embed
-    emb = discord.Embed()
+    emb = discord.Embed(title='**Progress**', color=msg.author.color, description=cont, timestamp=msg.created_at)
     emb.set_author(name=str(msg.author.display_name), icon_url=msg.author.avatar_url)
-    emb.color = msg.author.color
-    emb.title = '**Progress**'
-    emb.description = cont
-    emb.set_thumbnail(ctx.guild.icon_url)
-    emb.add_field('Follow-up', 'Originally posted by {0.channel.mention} in {0.author.mention}'.format(msg))
-    emb.set_footer('Originally posted in #{0.channel}'.format(msg), ctx.guild.icon_url)
-    emb.timestamp = msg.created_at
+    emb.set_thumbnail(url=ctx.guild.icon_url)
+    emb.add_field(name='Follow-up', value='Originally posted by {0.channel.mention} in {0.author.mention}'.format(msg))
+    emb.set_footer(text='Originally posted in #{0.channel}'.format(msg), icon_url=ctx.guild.icon_url)
 
     # Determine which image to display
     if msg.attachments:
         test_attach = msg.attachments[0]
         # test_embed = msg.embeds[0]
         if test_attach.width:
-            emb.set_image(test_attach.url)
-
+            emb.set_image(url=test_attach.url)
     elif msg.embeds:
         tar_embed = msg.embeds[0]
-        if tar_embed.image:
-            emb.set_image(tar_embed.image.url)
+        if tar_embed.provider:
+            emb.set_image(url=tar_embed.provider.url)
 
     # Handle attachments
     # file_list = []
