@@ -226,6 +226,8 @@ async def progress(ctx, *, cont):
         f = discord.File(b, attach.filename)
         file_list.append(f)
 
+    print(file_list)
+
     await prog_channel.send(content='``Channel:`` {0.channel.mention}\t``Author:`` {0.author.mention}\n'.format(msg) +
                                     cont, files=file_list)
     print("done")
