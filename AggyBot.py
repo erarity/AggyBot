@@ -204,7 +204,6 @@ async def checkrole(ctx, *, arg1):
 
 
 @bot.command()
-@commands.has_permissions(kick_members=True)
 async def progress(ctx, *, cont):
 
     # Wait for half a second to ensure embeds are logged properly
