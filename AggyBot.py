@@ -206,6 +206,15 @@ async def checkrole(ctx, *, arg1):
 @bot.command()
 async def progress(ctx, *, cont):
 
+    # Check if the author is progress muted or not
+    jail_role = discord.utils.get(ctx.guild.roles, id=426372709690245120)
+    for role in ctx.author.roles:
+        if role == jail_role:
+            await ctx.message.add_reaction('❌')
+            await ctx.author.send("You have been muted and cannot post to the progress channel.")
+            return
+
+
     # Wait for half a second to ensure embeds are logged properly
     await asyncio.sleep(0.5)
 
@@ -227,7 +236,7 @@ async def progress(ctx, *, cont):
     msg = ctx.message
 
     # Construct the embed
-    sig = '\n\nView the discussion in {0.channel.mention} or contact {0.author.mention}'.format(msg)
+    sig = '\n\n*Posted in* {0.channel.mention} *by* {0.author.mention}'.format(msg)
     emb = discord.Embed(color=msg.author.color, description=cont + sig, timestamp=msg.created_at)
     # emb.title = '**Progress**' can put this in constructor if needed
     emb.set_author(name=str(msg.author.display_name), icon_url=msg.author.avatar_url)
