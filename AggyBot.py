@@ -220,26 +220,34 @@ async def progress(ctx, *, cont):
 
     # Construct the embed
     emb = discord.Embed()
-    emb.set_author(name=str(msg.author.mention), icon_url=msg.author.avatar_url)
-    emb.title = 'Originally posted in {0.channel}'.format(msg)
+    emb.set_author(name=str(msg.author.display_name), icon_url=msg.author.avatar_url)
+    emb.color = msg.author.color
+    emb.title = '**Progress**'
     emb.description = cont
+    emb.set_thumbnail(ctx.guild.icon_url)
+    emb.add_field('Follow-up', 'Originally posted by {0.channel.mention} in {0.author.mention}'.format(msg))
+    emb.set_footer('Originally posted in #{0.channel}'.format(msg), ctx.guild.icon_url)
+    emb.timestamp = msg.created_at
 
     # Determine which image to display
     if msg.attachments:
         test_attach = msg.attachments[0]
         # test_embed = msg.embeds[0]
-        if test_attach:
-            if test_attach.width:
-                emb.set_image(test_attach.url)
-        # elif test_embed:
+        if test_attach.width:
+            emb.set_image(test_attach.url)
+
+    elif msg.embeds:
+        tar_embed = msg.embeds[0]
+        if tar_embed.image:
+            emb.set_image(tar_embed.image.url)
 
     # Handle attachments
-    file_list = []
-    for attach in msg.attachments:
-        b = io.BytesIO()
-        await attach.save(b)
-        f = discord.File(b, attach.filename)
-        file_list.append(f)
+    # file_list = []
+    # for attach in msg.attachments:
+    #     b = io.BytesIO()
+    #     await attach.save(b)
+    #     f = discord.File(b, attach.filename)
+    #     file_list.append(f)
 
     # await prog_channel.send(content='``Channel:`` {0.channel.mention}\t``Author:`` {0.author.mention}\n'.format(msg) + cont, files=file_list)
 
