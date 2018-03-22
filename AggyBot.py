@@ -243,7 +243,7 @@ async def progress(ctx, *, cont):
     emb.set_author(name=str(msg.author.display_name), icon_url=msg.author.avatar_url)
     # emb.set_thumbnail(url=ctx.guild.icon_url)
     # emb.add_field(name='Follow-up', value='Originally posted by {0.author.mention} in {0.channel.mention}'.format(msg))
-    # emb.set_footer(text='Originally posted in #{0.channel}'.format(msg), icon_url=ctx.guild.icon_url)
+    emb.set_footer(text='Originally posted in #{0.channel}'.format(msg), icon_url=ctx.guild.icon_url)
 
     # Determine which image to display
     # Simultaneously checks for .webms and .mp4
