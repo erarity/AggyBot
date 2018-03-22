@@ -260,8 +260,8 @@ async def progress(ctx, *, cont):
     # await prog_channel.send(content='``Channel:`` {0.channel.mention}\t``Author:`` {0.author.mention}\n'.format(msg) + cont, files=file_list)
 
     # Send the preview to the User and have them verify it before posting
-    verify_text = '\n**Wow, nice progress!** Below is a preview of your progress post. To confirm or decline just ' \
-                  'react with ✅ or ❌ and I\'ll do the rest. Keep up the good work!\n\n**Preview:**'
+    verify_text = '**Wow, nice progress!**\nBelow is a preview of your progress post. To confirm or decline just ' \
+                  'react with ✅ or ❌ and I\'ll do the rest. Keep up the good work!\n\n**Preview:**\n'
     verify_msg = await ctx.author.send(verify_text + f_cont, embed=emb)
     await verify_msg.add_reaction('✅')
     await verify_msg.add_reaction('❌')
@@ -273,12 +273,14 @@ async def progress(ctx, *, cont):
     try:
         reaction, user = bot.wait_for('reaction_add', timeout=120.0, check=check)
     except asyncio.TimeoutError:
-        await ctx.author.send("Previous preview has timed out.")
+        await ctx.author.send('Previous preview has timed out. Return to {}?'.format(msg.channel.mention))
         return
     else:
         if str(reaction.emoji) == '✅':
+            await ctx.author.send('Congratulations! You can view your new post in {} or return to {} and continue '
+                                  'the discussion.'.format(prog_channel.mention, msg.channel.mention))
             await prog_channel.send(f_cont, embed=emb)
         else:
-            await ctx.author.send("Preview declined.")
+            await ctx.author.send('Preview declined. Return to {}?'.format(msg.channel.mention))
 
 bot.run(token)
