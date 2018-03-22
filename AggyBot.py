@@ -298,10 +298,13 @@ async def progress(ctx, *, cont):
             await ctx.author.send('Congratulations! You can view your new post in {} or return to {} and continue '
                                   'the discussion.'.format(prog_channel.mention, msg.channel.mention))
             # Generate a second .webm file since the first is now closed
-            c = io.BytesIO(webm_download)
-            if c:
-                webm_file = discord.File(c, filename=webm_filename)
-                await prog_channel.send(embed=emb, file=webm_file)
+            if webm_file:
+                c = io.BytesIO(webm_download)
+                if c:
+                    webm_file = discord.File(c, filename=webm_filename)
+                    await prog_channel.send(embed=emb, file=webm_file)
+            else:
+                await prog_channel.send(embed=emb)
         else:
             await ctx.author.send('Preview declined. Return to {}?'.format(msg.channel.mention))
 
