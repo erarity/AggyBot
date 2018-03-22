@@ -237,9 +237,8 @@ async def progress(ctx, *, cont):
     # Simultaneously checks for .webms
     if msg.attachments:
         test_attach = msg.attachments[0]
-        # test_embed = msg.embeds[0]
         if test_attach.url.endswith('.webm'):
-            f_cont = '``Attached .webm``' + test_attach.url
+            f_cont = '``Attached .webm``\n' + test_attach.url
         elif test_attach.width:
             emb.set_image(url=test_attach.url)
     elif msg.embeds:
@@ -247,14 +246,9 @@ async def progress(ctx, *, cont):
         if tar_embed:
             if tar_embed.url:
                 if tar_embed.url.endswith('.webm'):
-                    f_cont = '``Attached .webm``' + tar_embed.url
+                    f_cont = '``Attached .webm``\n' + tar_embed.url
                 else:
                     emb.set_image(url=tar_embed.url)
-
-    # Handle special file attachments
-    # if f_cont:
-    #     b = io.BytesIO()
-    #     await
 
     # file_list = []
     # for attach in msg.attachments:
@@ -266,11 +260,11 @@ async def progress(ctx, *, cont):
     # await prog_channel.send(content='``Channel:`` {0.channel.mention}\t``Author:`` {0.author.mention}\n'.format(msg) + cont, files=file_list)
 
     # Send the preview to the User and have them verify it before posting
-    verify_text = 'Wow, nice progress! Below is a preview of your progress post. To confirm or decline just react ' \
-                  'with ✅ or ❌ and I\'ll do the rest. Keep up the good work!'
+    verify_text = '\n**Wow, nice progress!** Below is a preview of your progress post. To confirm or decline just ' \
+                  'react with ✅ or ❌ and I\'ll do the rest. Keep up the good work!\n\n**Preview:**'
     verify_msg = await ctx.author.send(verify_text + f_cont, embed=emb)
-    verify_msg.add_reaction('✅')
-    verify_msg.add_reaction('❌')
+    await verify_msg.add_reaction('✅')
+    await verify_msg.add_reaction('❌')
 
     # Detect the verification
     def check(reaction, user):
