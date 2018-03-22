@@ -219,10 +219,10 @@ async def progress(ctx, *, cont):
     msg = ctx.message
 
     # Construct the embed
-    embed = discord.Embed()
-    embed.set_author(name=str(msg.author), icon_url=msg.author.avatar_url)
-    embed.title = 'Originally posted in {}'.format(msg.channel.mention)
-    embed.description = cont
+    emb = discord.Embed()
+    emb.set_author(name=str(msg.author), icon_url=msg.author.avatar_url)
+    emb.title = 'Originally posted in {0.channel.mention}'.format(msg)
+    emb.description = cont
 
     # Handle attachments
     file_list = []
@@ -234,6 +234,6 @@ async def progress(ctx, *, cont):
 
     # await prog_channel.send(content='``Channel:`` {0.channel.mention}\t``Author:`` {0.author.mention}\n'.format(msg) + cont, files=file_list)
 
-    await prog_channel.send(embed=discord.Embed)
+    await prog_channel.send(embed=emb)
 
 bot.run(token)
