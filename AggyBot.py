@@ -279,7 +279,7 @@ async def progress(ctx, *, cont):
 
     # Send the preview to the User and have them verify it before posting
     verify_text = '**Wow, nice progress!**\nBelow is a preview of your progress post. To confirm or decline just ' \
-                  'react with ✅ or ❌ and I\'ll do the rest. Keep up the good work!\n\n**Preview:**\n'
+                  'react with ✅ or ❌ and we\'ll do the rest. Keep up the good work!\n\n**Preview:**\n'
     verify_msg = await ctx.author.send(verify_text, embed=emb, file=webm_file)
     await verify_msg.add_reaction('✅')
     await verify_msg.add_reaction('❌')
