@@ -219,7 +219,8 @@ async def progress(ctx, *, cont):
         await ctx.author.send("Ensure that your progress post has attached media. Text-only posts are not allowed.")
         return
     if num_attach > 1 or num_attach > 1:
-        # do something
+        await ctx.message.add_reaction('❌')
+        await ctx.author.send("Embeds will not be able to display more than one image.")
 
     prog_channel = discord.utils.get(ctx.guild.channels, id=prog_chan_ID)
     # print('Identified progress channel.\tName:{0.name}\tID:{0.id}'.format(prog_channel))
