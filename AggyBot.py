@@ -62,16 +62,6 @@ async def on_command_error(ctx, err):
         await ctx.send('No Dice. Try: ``' + ctx.command.signature + '``')
 
 
-@bot.command()
-@commands.has_permissions(kick_members=True)
-async def showmiscroles(ctx):
-    await ctx.sned('displaying misc roles')
-    colors = discord.utils.get(ctx.guild.roles, id=colorsID)
-    sorted_roles = sorted(ctx.guild.roles)
-    for i in sorted_roles[colors:]:
-        await ctx.send('{}\t{}\t{}'.format(i.position, i.name, i.id))
-
-
 # @bot.command()
 # @commands.has_permissions(manage_roles=True)
 # async def showroles(ctx):
@@ -217,7 +207,7 @@ async def checkrole(ctx, *, arg1):
 async def progress(ctx, *, cont):
 
     # Check if the author is progress muted or not
-    mute_role = discord.utils.get(ctx.guild.roles, id=426372709690245120)
+    mute_role = discord.utils.get(ctx.guild.roles, id=426372445998546946)
     for role in ctx.author.roles:
         if role == mute_role:
             await ctx.message.add_reaction('❌')
