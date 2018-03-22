@@ -240,6 +240,9 @@ async def progress(ctx, *, cont):
         if tar_embed.image:
             print("Embed is an image with URL: {0.url}".format(tar_embed.image))
             emb.set_image(url=tar_embed.image.url)
+        elif tar_embed:
+            print("Embed is valid and has URL: {0.url}".format(tar_embed.url))
+            emb.set_image(url=tar_embed.url)
 
     # Handle attachments
     # file_list = []
