@@ -220,7 +220,7 @@ async def progress(ctx, *, cont):
     # Handle attachments
     file_list = []
     for attach in msg.attachments:
-        b = io.bytesio()
+        b = io.BytesIO()
         attach.save(b)
         b.seek(0)
         f = discord.File(b, attach.filename)
