@@ -255,11 +255,13 @@ async def progress(ctx, *, cont):
                     emb.set_image(url=tar_embed.url)
 
     # Save .webm file
+    webm_download = None
     webm_file = None
     if webm_url:
         async with aiohttp.ClientSession() as session:
             async with session.get(webm_url) as w:
-                b = io.BytesIO(await w.read())
+                webm_download = await w.read()
+                b = io.BytesIO(webm_download)
                 if b:
                     webm_file = discord.File(b, filename=webm_filename)
 
@@ -292,7 +294,11 @@ async def progress(ctx, *, cont):
         if str(reaction.emoji) == '✅':
             await ctx.author.send('Congratulations! You can view your new post in {} or return to {} and continue '
                                   'the discussion.'.format(prog_channel.mention, msg.channel.mention))
-            await prog_channel.send(embed=emb, file=webm_file)
+            # Generate a second .webm file since the first is now closed
+            c = io.BytesIO(webm_download)
+            if c:
+                webm_file = discord.File(c, filename=webm_filename)
+                await prog_channel.send(embed=emb, file=webm_file)
         else:
             await ctx.author.send('Preview declined. Return to {}?'.format(msg.channel.mention))
 
