@@ -223,7 +223,8 @@ async def progress(ctx, *, cont):
         b = io.bytesio()
         attach.save(b)
         b.seek(0)
-        file_list.append(discord.File(b))  # I forget how this works exactly tbh
+        f = discord.File(b, attach.filename)
+        file_list.append(f)
 
     await prog_channel.send(content='``Channel:`` {0.channel.mention}\t``Author:`` {0.author.mention}\n'.format(msg) +
                                     cont, files=file_list)
