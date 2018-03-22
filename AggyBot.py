@@ -246,12 +246,12 @@ async def progress(ctx, *, cont):
     emb.set_footer(text='Originally posted in #{0.channel}'.format(msg), icon_url=ctx.guild.icon_url)
 
     # Determine which image to display
-    # Simultaneously checks for .webms
+    # Simultaneously checks for .webms and .mp4
     webm_url = None
     webm_filename = None
     if msg.attachments:
         test_attach = msg.attachments[0]
-        if test_attach.url.endswith('.webm'):
+        if test_attach.url.endswith('.webm') or test_attach.url.endswith('.mp4'):
             webm_url = test_attach.url
             webm_filename = test_attach.filename
         elif test_attach.width:
@@ -260,7 +260,7 @@ async def progress(ctx, *, cont):
         tar_embed = msg.embeds[0]
         if tar_embed:
             if tar_embed.url:
-                if tar_embed.url.endswith('.webm'):
+                if tar_embed.url.endswith('.webm') or test_attach.url.endswith('.mp4'):
                     webm_url = tar_embed.url
                     webm_filename = tar_embed.url.split('/')[-1]
                 else:
