@@ -208,9 +208,10 @@ async def progress(ctx, *, cont):
     # Ensure that there is either an embed, a link, or an attachment.
     num_attach = len(ctx.message.attachments)
     num_embed = len(ctx.message.embeds)
+    print('Attachments: {}\tEmbeds: {}'.format(num_attach, num_embed))
     if num_attach < 1 and num_embed < 1:
         await ctx.message.add_reaction('❌')
-        await ctx.channel.send("Ensure that your progress post has attached media. Text-only posts are not allowed.")
+        await ctx.author.send("Ensure that your progress post has attached media. Text-only posts are not allowed.")
         return
 
     prog_channel = discord.utils.get(ctx.guild.channels, id=prog_chan_ID)
