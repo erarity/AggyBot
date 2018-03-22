@@ -3,6 +3,7 @@ import json
 import asyncio
 import io
 from discord.ext import commands
+from concurrent import futures
 
 bot = commands.Bot(command_prefix='>')
 
@@ -221,7 +222,7 @@ async def progress(ctx, *, cont):
     # print('Identified progress channel.\tName:{0.name}\tID:{0.id}'.format(prog_channel))
 
     msg = ctx.message
-    f_cont = ' ' # Final content to be posted
+    f_cont = None  # Final content to be posted
 
     # Construct the embed
     sig = '\n\nOriginally posted by {0.author.mention} in {0.channel.mention}'.format(msg)
@@ -250,7 +251,11 @@ async def progress(ctx, *, cont):
                 else:
                     emb.set_image(url=tar_embed.url)
 
-    # Handle attachments
+    # Handle special file attachments
+    # if f_cont:
+    #     b = io.BytesIO()
+    #     await
+
     # file_list = []
     # for attach in msg.attachments:
     #     b = io.BytesIO()
@@ -261,12 +266,25 @@ async def progress(ctx, *, cont):
     # await prog_channel.send(content='``Channel:`` {0.channel.mention}\t``Author:`` {0.author.mention}\n'.format(msg) + cont, files=file_list)
 
     # Send the preview to the User and have them verify it before posting
-    verify_msg = 'Wow, nice progress! Below is a preview of your progress post. If everything looks good to you, you ' \
-                 'can reply with ``[Yes``,``Y``, or ``y`` and I\'ll go ahead and post it! If you\'re having second ' \
-                 'thoughts just reply with ``No``,``N``, or ``n`` to decline. If you\'re cooler than cool you ' \
-                 'can just react with 👍 or 👎 and I\'ll take care of the rest. Keep it up!\n\n**Preview:**'
-    # await ctx.author.send(verify_msg + f_cont, embed=emb)
+    verify_text = 'Wow, nice progress! Below is a preview of your progress post. To confirm or decline just react ' \
+                  'with ✅ or ❌ and I\'ll do the rest. Keep up the good work!'
+    verify_msg = await ctx.author.send(verify_text + f_cont, embed=emb)
+    verify_msg.add_reaction('✅')
+    verify_msg.add_reaction('❌')
 
-    await prog_channel.send(f_cont, embed=emb)
+    # Detect the verification
+    def check(reaction, user):
+        return (user == ctx.author and str(reaction.emoji) == '✅') or (user == ctx.author and str(reaction.emoji) == '❌')
+
+    try:
+        reaction, user = bot.wait_for('reaction_add', timeout=120.0, check=check)
+    except asyncio.TimeoutError:
+        await ctx.author.send("Previous preview has timed out.")
+        return
+    else:
+        if str(reaction.emoji) == '✅':
+            await prog_channel.send(f_cont, embed=emb)
+        else:
+            await ctx.author.send("Preview declined.")
 
 bot.run(token)
