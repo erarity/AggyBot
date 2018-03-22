@@ -250,7 +250,7 @@ async def progress(ctx, *, cont):
             if tar_embed.url:
                 if tar_embed.url.endswith('.webm'):
                     webm_url = tar_embed.url
-                    webm_filename = 'Embed.webm'
+                    webm_filename = tar_embed.url.split('/')[-1]
                 else:
                     emb.set_image(url=tar_embed.url)
 
