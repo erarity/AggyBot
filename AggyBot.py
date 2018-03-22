@@ -222,7 +222,7 @@ async def progress(ctx, *, cont):
     emb = discord.Embed(title='**Progress**', color=msg.author.color, description=cont, timestamp=msg.created_at)
     emb.set_author(name=str(msg.author.display_name), icon_url=msg.author.avatar_url)
     emb.set_thumbnail(url=ctx.guild.icon_url)
-    emb.add_field(name='Follow-up', value='Originally posted by {0.channel.mention} in {0.author.mention}'.format(msg))
+    emb.add_field(name='Follow-up', value='Originally posted by {0.author.mention} in {0.channel.mention}'.format(msg))
     emb.set_footer(text='Originally posted in #{0.channel}'.format(msg), icon_url=ctx.guild.icon_url)
 
     # Determine which image to display
@@ -233,8 +233,8 @@ async def progress(ctx, *, cont):
             emb.set_image(url=test_attach.url)
     elif msg.embeds:
         tar_embed = msg.embeds[0]
-        if tar_embed.provider:
-            emb.set_image(url=tar_embed.provider.url)
+        if tar_embed.image:
+            emb.set_image(url=tar_embed.image.url)
 
     # Handle attachments
     # file_list = []
