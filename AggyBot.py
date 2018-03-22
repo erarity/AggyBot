@@ -260,7 +260,7 @@ async def progress(ctx, *, cont):
         tar_embed = msg.embeds[0]
         if tar_embed:
             if tar_embed.url:
-                if tar_embed.url.endswith('.webm') or test_attach.url.endswith('.mp4'):
+                if tar_embed.url.endswith('.webm') or tar_embed.url.endswith('.mp4'):
                     webm_url = tar_embed.url
                     webm_filename = tar_embed.url.split('/')[-1]
                 else:
