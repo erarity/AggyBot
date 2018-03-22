@@ -206,12 +206,11 @@ async def checkrole(ctx, *, arg1):
 async def progress(ctx, *, cont):
 
     # Ensure that there is either an embed, a link, or an attachment.
-    # num_attach = len(ctx.message.attachments)
-    # num_embed = len(ctx.message.embeds)
-    # if num_attach < 1:
-    #     print("Number of attachments is 0.")
-    # if num_embed < 1:
-    #     print("Number of embeds is 0.")
+    num_attach = len(ctx.message.attachments)
+    num_embed = len(ctx.message.embeds)
+    if num_attach < 1 and num_embed < 1:
+        await ctx.message.add_reaction('❌')
+        await ctx.channel.send("Ensure that your progress post has attached media. Text-only posts are not allowed.")
 
     prog_channel = discord.utils.get(ctx.guild.channels, id=prog_chan_ID)
     # print('Identified progress channel.\tName:{0.name}\tID:{0.id}'.format(prog_channel))
@@ -234,8 +233,10 @@ async def progress(ctx, *, cont):
         if test_attach.width:
             emb.set_image(url=test_attach.url)
     elif msg.embeds:
+        print("Has an embed")
         tar_embed = msg.embeds[0]
         if tar_embed.image:
+            print("Embed is an image with URL: {0.url}".format(tar_embed.image))
             emb.set_image(url=tar_embed.image.url)
 
     # Handle attachments
