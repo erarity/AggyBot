@@ -219,10 +219,12 @@ async def progress(ctx, *, cont):
     msg = ctx.message
 
     # Construct the embed
-    emb = discord.Embed(title='**Progress**', color=msg.author.color, description=cont, timestamp=msg.created_at)
+    sig = '\nOriginally posted by {0.author.mention} in {0.channel.mention}'.format(msg)
+    emb = discord.Embed(color=msg.author.color, description=cont + sig, timestamp=msg.created_at)
+    # emb.title = '**Progress**' can put this in constructor if needed
     emb.set_author(name=str(msg.author.display_name), icon_url=msg.author.avatar_url)
     emb.set_thumbnail(url=ctx.guild.icon_url)
-    emb.add_field(name='Follow-up', value='Originally posted by {0.author.mention} in {0.channel.mention}'.format(msg))
+    # emb.add_field(name='Follow-up', value='Originally posted by {0.author.mention} in {0.channel.mention}'.format(msg))
     emb.set_footer(text='Originally posted in #{0.channel}'.format(msg), icon_url=ctx.guild.icon_url)
 
     # Determine which image to display
