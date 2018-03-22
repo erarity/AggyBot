@@ -205,12 +205,12 @@ async def checkrole(ctx, *, arg1):
 async def progress(ctx, *, cont):
 
     # Ensure that there is either an embed, a link, or an attachment.
-    num_attach = len(ctx.message.attachments)
-    num_embed = len(ctx.message.embeds)
-    if num_attach < 1:
-        print("Number of attachments is 0.")
-    if num_embed < 1:
-        print("Number of embeds is 0.")
+    # num_attach = len(ctx.message.attachments)
+    # num_embed = len(ctx.message.embeds)
+    # if num_attach < 1:
+    #     print("Number of attachments is 0.")
+    # if num_embed < 1:
+    #     print("Number of embeds is 0.")
 
     prog_channel = discord.utils.get(ctx.guild.channels, id=prog_chan_ID)
     print('Identified progress channel.\tName:{0.name}\tID:{0.id}'.format(prog_channel))
@@ -221,14 +221,13 @@ async def progress(ctx, *, cont):
     file_list = []
     for attach in msg.attachments:
         b = io.BytesIO()
-        attach.save(b)
+        await attach.save(b)
         f = discord.File(b, attach.filename)
         file_list.append(f)
 
-    # print(file_list)
+    print(file_list)
 
     await prog_channel.send(content='``Channel:`` {0.channel.mention}\t``Author:`` {0.author.mention}\n'.format(msg) +
                                     cont, files=file_list)
-    print("done")
 
 bot.run(token)
