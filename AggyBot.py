@@ -2,6 +2,7 @@ import discord
 import json
 import asyncio
 import io
+import aiohttp
 from discord.ext import commands
 from concurrent import futures
 
@@ -222,7 +223,6 @@ async def progress(ctx, *, cont):
     # print('Identified progress channel.\tName:{0.name}\tID:{0.id}'.format(prog_channel))
 
     msg = ctx.message
-    f_cont = None  # Final content to be posted
 
     # Construct the embed
     sig = '\n\nOriginally posted by {0.author.mention} in {0.channel.mention}'.format(msg)
@@ -235,10 +235,11 @@ async def progress(ctx, *, cont):
 
     # Determine which image to display
     # Simultaneously checks for .webms
+    webm_url = None
     if msg.attachments:
         test_attach = msg.attachments[0]
         if test_attach.url.endswith('.webm'):
-            f_cont = '``Attached .webm``\n' + test_attach.url
+            webm_url = test_attach.url
         elif test_attach.width:
             emb.set_image(url=test_attach.url)
     elif msg.embeds:
@@ -246,9 +247,18 @@ async def progress(ctx, *, cont):
         if tar_embed:
             if tar_embed.url:
                 if tar_embed.url.endswith('.webm'):
-                    f_cont = '``Attached .webm``\n' + tar_embed.url
+                    webm_url = tar_embed.url
                 else:
                     emb.set_image(url=tar_embed.url)
+
+    #Save .webm file
+    webm_file = None
+    if(webm_url):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(webm_url) as w:
+                b = io.BytesIO(await w.read())
+                if b:
+                    webm_file = b
 
     # file_list = []
     # for attach in msg.attachments:
@@ -262,7 +272,7 @@ async def progress(ctx, *, cont):
     # Send the preview to the User and have them verify it before posting
     verify_text = '**Wow, nice progress!**\nBelow is a preview of your progress post. To confirm or decline just ' \
                   'react with ✅ or ❌ and I\'ll do the rest. Keep up the good work!\n\n**Preview:**\n'
-    verify_msg = await ctx.author.send(verify_text + f_cont, embed=emb)
+    verify_msg = await ctx.author.send(verify_text, embed=emb, file=webm_file)
     await verify_msg.add_reaction('✅')
     await verify_msg.add_reaction('❌')
 
@@ -279,7 +289,7 @@ async def progress(ctx, *, cont):
         if str(reaction.emoji) == '✅':
             await ctx.author.send('Congratulations! You can view your new post in {} or return to {} and continue '
                                   'the discussion.'.format(prog_channel.mention, msg.channel.mention))
-            await prog_channel.send(f_cont, embed=emb)
+            await prog_channel.send(embed=emb, file=webm_file)
         else:
             await ctx.author.send('Preview declined. Return to {}?'.format(msg.channel.mention))
 
