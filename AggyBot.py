@@ -220,9 +220,18 @@ async def progress(ctx, *, cont):
 
     # Construct the embed
     emb = discord.Embed()
-    emb.set_author(name=str(msg.author), icon_url=msg.author.avatar_url)
-    emb.title = 'Originally posted in {0.channel.mention}'.format(msg)
+    emb.set_author(name=str(msg.author.mention), icon_url=msg.author.avatar_url)
+    emb.title = 'Originally posted in {0.channel}'.format(msg)
     emb.description = cont
+
+    # Determine which image to display
+    test_attach = msg.attachments[0]
+    # test_embed = msg.embeds[0]
+    if test_attach:
+        if test_attach.width:
+            emb.set_image(test_attach.url)
+    # elif test_embed:
+
 
     # Handle attachments
     file_list = []
