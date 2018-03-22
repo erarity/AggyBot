@@ -243,6 +243,7 @@ async def progress(ctx, *, cont):
     prog_channel = discord.utils.get(ctx.guild.channels, id=prog_chan_ID)
     # print('Identified progress channel.\tName:{0.name}\tID:{0.id}'.format(prog_channel))
 
+    # Small shortcut
     msg = ctx.message
 
     # Construct the embed
