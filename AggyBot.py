@@ -225,13 +225,13 @@ async def progress(ctx, *, cont):
     emb.description = cont
 
     # Determine which image to display
-    test_attach = msg.attachments[0]
-    # test_embed = msg.embeds[0]
-    if test_attach:
-        if test_attach.width:
-            emb.set_image(test_attach.url)
-    # elif test_embed:
-
+    if msg.attachments:
+        test_attach = msg.attachments[0]
+        # test_embed = msg.embeds[0]
+        if test_attach:
+            if test_attach.width:
+                emb.set_image(test_attach.url)
+        # elif test_embed:
 
     # Handle attachments
     file_list = []
