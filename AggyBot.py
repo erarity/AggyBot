@@ -237,7 +237,7 @@ async def progress(ctx, *, cont):
     if msg.attachments:
         test_attach = msg.attachments[0]
         # test_embed = msg.embeds[0]
-        if test_attach.url.ends_with('.webm'):
+        if test_attach.url.endswith('.webm'):
             f_cont = '``Attached .webm``' + test_attach.url
         elif test_attach.width:
             emb.set_image(url=test_attach.url)
@@ -245,7 +245,7 @@ async def progress(ctx, *, cont):
         tar_embed = msg.embeds[0]
         if tar_embed:
             if tar_embed.url:
-                if tar_embed.url.ends_with('.webm'):
+                if tar_embed.url.endswith('.webm'):
                     f_cont = '``Attached .webm``' + tar_embed.url
                 else:
                     emb.set_image(url=tar_embed.url)
@@ -266,7 +266,6 @@ async def progress(ctx, *, cont):
                  'thoughts just reply with ``No``,``N``, or ``n`` to decline. If you\'re cooler than cool you ' \
                  'can just react with 👍 or 👎 and I\'ll take care of the rest. Keep it up!\n\n**Preview:**'
     # await ctx.author.send(verify_msg + f_cont, embed=emb)
-
 
     await prog_channel.send(f_cont, embed=emb)
 
