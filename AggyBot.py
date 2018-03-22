@@ -218,6 +218,8 @@ async def progress(ctx, *, cont):
         await ctx.message.add_reaction('❌')
         await ctx.author.send("Ensure that your progress post has attached media. Text-only posts are not allowed.")
         return
+    if num_attach > 1 or num_attach > 1:
+        # do something
 
     prog_channel = discord.utils.get(ctx.guild.channels, id=prog_chan_ID)
     # print('Identified progress channel.\tName:{0.name}\tID:{0.id}'.format(prog_channel))
@@ -225,7 +227,7 @@ async def progress(ctx, *, cont):
     msg = ctx.message
 
     # Construct the embed
-    sig = '\n\nOriginally posted by {0.author.mention} in {0.channel.mention}'.format(msg)
+    sig = '\n\nView the discussion in {0.channel.mention} or contact {0.author.mention}'.format(msg)
     emb = discord.Embed(color=msg.author.color, description=cont + sig, timestamp=msg.created_at)
     # emb.title = '**Progress**' can put this in constructor if needed
     emb.set_author(name=str(msg.author.display_name), icon_url=msg.author.avatar_url)
@@ -236,7 +238,7 @@ async def progress(ctx, *, cont):
     # Determine which image to display
     # Simultaneously checks for .webms
     webm_url = None
-    webm_filename = 'Reupload.webm'
+    webm_filename = None
     if msg.attachments:
         test_attach = msg.attachments[0]
         if test_attach.url.endswith('.webm'):
