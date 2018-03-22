@@ -236,10 +236,12 @@ async def progress(ctx, *, cont):
     # Determine which image to display
     # Simultaneously checks for .webms
     webm_url = None
+    webm_filename = 'Reupload.webm'
     if msg.attachments:
         test_attach = msg.attachments[0]
         if test_attach.url.endswith('.webm'):
             webm_url = test_attach.url
+            webm_filename = test_attach.filename
         elif test_attach.width:
             emb.set_image(url=test_attach.url)
     elif msg.embeds:
@@ -248,17 +250,18 @@ async def progress(ctx, *, cont):
             if tar_embed.url:
                 if tar_embed.url.endswith('.webm'):
                     webm_url = tar_embed.url
+                    webm_filename = 'Embed.webm'
                 else:
                     emb.set_image(url=tar_embed.url)
 
-    #Save .webm file
+    # Save .webm file
     webm_file = None
-    if(webm_url):
+    if webm_url:
         async with aiohttp.ClientSession() as session:
             async with session.get(webm_url) as w:
                 b = io.BytesIO(await w.read())
                 if b:
-                    webm_file = b
+                    webm_file = discord.File(b, filename=webm_filename)
 
     # file_list = []
     # for attach in msg.attachments:
@@ -281,7 +284,7 @@ async def progress(ctx, *, cont):
         return (user == ctx.author and str(reaction.emoji) == '✅') or (user == ctx.author and str(reaction.emoji) == '❌')
 
     try:
-        reaction, user = bot.wait_for('reaction_add', timeout=120.0, check=check)
+        reaction, user = await bot.wait_for('reaction_add', timeout=120.0, check=check)
     except asyncio.TimeoutError:
         await ctx.author.send('Previous preview has timed out. Return to {}?'.format(msg.channel.mention))
         return
