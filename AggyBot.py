@@ -205,6 +205,9 @@ async def checkrole(ctx, *, arg1):
 @commands.has_permissions(kick_members=True)
 async def progress(ctx, *, cont):
 
+    # Wait for half a second to ensure embeds are logged properly
+    await asyncio.sleep(0.5)
+
     # Ensure that there is either an embed, a link, or an attachment.
     num_attach = len(ctx.message.attachments)
     num_embed = len(ctx.message.embeds)
@@ -218,6 +221,7 @@ async def progress(ctx, *, cont):
     # print('Identified progress channel.\tName:{0.name}\tID:{0.id}'.format(prog_channel))
 
     msg = ctx.message
+    f_cont = ' ' # Final content to be posted
 
     # Construct the embed
     sig = '\n\nOriginally posted by {0.author.mention} in {0.channel.mention}'.format(msg)
@@ -229,23 +233,22 @@ async def progress(ctx, *, cont):
     emb.set_footer(text='Originally posted in #{0.channel}'.format(msg), icon_url=ctx.guild.icon_url)
 
     # Determine which image to display
+    # Simultaneously checks for .webms
     if msg.attachments:
         test_attach = msg.attachments[0]
         # test_embed = msg.embeds[0]
-        if test_attach.width:
+        if test_attach.url.ends_with('.webm'):
+            f_cont = '``Attached .webm``' + test_attach.url
+        elif test_attach.width:
             emb.set_image(url=test_attach.url)
     elif msg.embeds:
-        print("Has an embed")
         tar_embed = msg.embeds[0]
-        print("Target embed: {}".format(tar_embed))
-        if tar_embed.image:
-            print("Embed is an image with URL: {0.url}".format(tar_embed.image))
-            emb.set_image(url=tar_embed.image.url)
         if tar_embed:
-            print("Object is valid")
             if tar_embed.url:
-                print("Embed is valid and has URL: {0.url}".format(tar_embed.url))
-                emb.set_image(url=tar_embed.url)
+                if tar_embed.url.ends_with('.webm'):
+                    f_cont = '``Attached .webm``' + tar_embed.url
+                else:
+                    emb.set_image(url=tar_embed.url)
 
     # Handle attachments
     # file_list = []
@@ -257,6 +260,14 @@ async def progress(ctx, *, cont):
 
     # await prog_channel.send(content='``Channel:`` {0.channel.mention}\t``Author:`` {0.author.mention}\n'.format(msg) + cont, files=file_list)
 
-    await prog_channel.send(embed=emb)
+    # Send the preview to the User and have them verify it before posting
+    verify_msg = 'Wow, nice progress! Below is a preview of your progress post. If everything looks good to you, you ' \
+                 'can reply with ``[Yes``,``Y``, or ``y`` and I\'ll go ahead and post it! If you\'re having second ' \
+                 'thoughts just reply with ``No``,``N``, or ``n`` to decline. If you\'re cooler than cool you ' \
+                 'can just react with 👍 or 👎 and I\'ll take care of the rest. Keep it up!\n\n**Preview:**'
+    # await ctx.author.send(verify_msg + f_cont, embed=emb)
+
+
+    await prog_channel.send(f_cont, embed=emb)
 
 bot.run(token)
