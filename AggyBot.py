@@ -26,6 +26,7 @@ admin_chan_ID = role_data["admin"]
 log_chan_ID = role_data["botlog"]
 prog_chan_ID = role_data["progress"]
 
+
 @bot.event
 async def on_ready():
     print('Bot ready!')
@@ -213,9 +214,15 @@ async def progress(ctx, *, cont):
     #     print("Number of embeds is 0.")
 
     prog_channel = discord.utils.get(ctx.guild.channels, id=prog_chan_ID)
-    print('Identified progress channel.\tName:{0.name}\tID:{0.id}'.format(prog_channel))
+    # print('Identified progress channel.\tName:{0.name}\tID:{0.id}'.format(prog_channel))
 
     msg = ctx.message
+
+    # Construct the embed
+    embed = discord.Embed()
+    embed.set_author(name=str(msg.author), icon_url=msg.author.avatar_url)
+    embed.title = 'Originally posted in {}'.format(msg.channel.mention)
+    embed.description = cont
 
     # Handle attachments
     file_list = []
@@ -225,9 +232,8 @@ async def progress(ctx, *, cont):
         f = discord.File(b, attach.filename)
         file_list.append(f)
 
-    print(file_list)
+    # await prog_channel.send(content='``Channel:`` {0.channel.mention}\t``Author:`` {0.author.mention}\n'.format(msg) + cont, files=file_list)
 
-    await prog_channel.send(content='``Channel:`` {0.channel.mention}\t``Author:`` {0.author.mention}\n'.format(msg) +
-                                    cont, files=file_list)
+    await prog_channel.send(embed=discord.Embed)
 
 bot.run(token)
