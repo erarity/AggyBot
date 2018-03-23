@@ -246,14 +246,14 @@ async def progress(ctx, *, cont):
     emb.set_footer(text='Originally posted in #{0.channel}'.format(msg), icon_url=ctx.guild.icon_url)
 
     # Determine which image to display
-    # Simultaneously checks for .webms and .mp4
-    webm_url = None
-    webm_filename = None
+    # Simultaneously checks for special files such as .webms and .mp4
+    sfile_url = None
+    sfile_filename = None
     if msg.attachments:
         test_attach = msg.attachments[0]
         if test_attach.url.endswith('.webm') or test_attach.url.endswith('.mp4'):
-            webm_url = test_attach.url
-            webm_filename = test_attach.filename
+            sfile_url = test_attach.url
+            sfile_filename = test_attach.filename
         elif test_attach.width:
             emb.set_image(url=test_attach.url)
     elif msg.embeds:
@@ -261,21 +261,25 @@ async def progress(ctx, *, cont):
         if tar_embed:
             if tar_embed.url:
                 if tar_embed.url.endswith('.webm') or tar_embed.url.endswith('.mp4'):
-                    webm_url = tar_embed.url
-                    webm_filename = tar_embed.url.split('/')[-1]
+                    sfile_url = tar_embed.url
+                    sfile_filename = tar_embed.url.split('/')[-1]
+                elif tar_embed.url.startswith('https://streamable.com/'):
+                    if tar_embed.video:
+                        sfile_url = tar_embed.video.url
+                        sfile_filename = tar_embed.title + '.mp4'
                 else:
                     emb.set_image(url=tar_embed.url)
 
-    # Save .webm file
-    webm_download = None
-    webm_file = None
-    if webm_url:
+    # Save special file
+    sfile_download = None
+    spec_file = None
+    if sfile_url:
         async with aiohttp.ClientSession() as session:
-            async with session.get(webm_url) as w:
-                webm_download = await w.read()
-                b = io.BytesIO(webm_download)
+            async with session.get(sfile_url) as w:
+                sfile_download = await w.read()
+                b = io.BytesIO(sfile_download)
                 if b:
-                    webm_file = discord.File(b, filename=webm_filename)
+                    spec_file = discord.File(b, filename=sfile_filename)
 
     # file_list = []
     # for attach in msg.attachments:
@@ -289,7 +293,7 @@ async def progress(ctx, *, cont):
     # Send the preview to the User and have them verify it before posting
     verify_text = '**Wow, nice progress!**\nBelow is a preview of your progress post. To confirm or decline just ' \
                   'react with ✅ or ❌ and we\'ll do the rest. Keep up the good work!\n\n**Preview:**\n'
-    verify_msg = await ctx.author.send(verify_text, embed=emb, file=webm_file)
+    verify_msg = await ctx.author.send(verify_text, embed=emb, file=spec_file)
     await verify_msg.add_reaction('✅')
     await verify_msg.add_reaction('❌')
 
@@ -306,12 +310,12 @@ async def progress(ctx, *, cont):
         if str(reaction.emoji) == '✅':
             await ctx.author.send('Congratulations! You can view your new post in {} or return to {} and continue '
                                   'the discussion.'.format(prog_channel.mention, msg.channel.mention))
-            # Generate a second .webm file since the first is now closed
-            if webm_file:
-                c = io.BytesIO(webm_download)
+            # Generate a second special file since the first is now closed
+            if spec_file:
+                c = io.BytesIO(sfile_download)
                 if c:
-                    webm_file = discord.File(c, filename=webm_filename)
-                    await prog_channel.send(embed=emb, file=webm_file)
+                    spec_file = discord.File(c, filename=sfile_filename)
+                    await prog_channel.send(embed=emb, file=spec_file)
             else:
                 await prog_channel.send(embed=emb)
         else:
