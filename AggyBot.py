@@ -25,7 +25,7 @@ skillsID = role_data["skills"]
 modID = role_data["moderator"]
 
 admin_chan_ID = role_data["admin"]
-log_chan_ID = role_data["botlog"]
+leave_chan_ID = role_data["leaves"]
 prog_chan_ID = role_data["progress"]
 
 
@@ -45,15 +45,30 @@ async def on_ready():
     admin_channel = discord.utils.get(agdg.channels, id=admin_chan_ID)
     print('Identified admin channel.\tName:{0.name}\tID:{0.id}'.format(admin_channel))
 
-    log_channel = discord.utils.get(agdg.channels, id=log_chan_ID)
-    print('Identified log channel.\tName:{0.name}\tID:{0.id}'.format(log_channel))
+    leave_channel = discord.utils.get(agdg.channels, id=leave_chan_ID)
+    print('Identified log channel.\tName:{0.name}\tID:{0.id}'.format(leave_channel))
 
 
 @bot.event
 async def on_member_remove(mem):
+
+    # Obtain the channel to log members leaving.
+    leave_channel = discord.utils.get(mem.guild.channels, id=leave_chan_ID)
+    print('Identified log channel.\tName:{0.name}\tID:{0.id}'.format(leave_channel))
+
+    nickname = mem.nick
+    if nickname is None:
+        nickname = ""
+    else:
+        nickname = "(" + nickname + ")"
     for role in mem.roles:
         if role.id == prisonerID:
             print("A user left the server with the prisoner role.")
+            # Obtain reference to moderator role
+            mod_role_obj = discord.utils.get(mem.guild.roles, id=modID)
+            await leave_channel.send(mod_role_obj.mention + " {} {} has left the server with the prisoner role.".format(mem, nickname))
+            return
+    await leave_channel.send("{} {} has left the server.".format(mem, nickname))
 
 
 @bot.event
