@@ -71,10 +71,10 @@ async def on_member_remove(mem):
     await leave_channel.send("{} {} has left the server.".format(mem, nickname))
 
 
-@bot.event
-async def on_command_error(ctx, err):
-    if isinstance(err, commands.BadArgument):
-        await ctx.send('No Dice. Try: ``' + ctx.command.signature + '``')
+# @bot.event
+# async def on_command_error(ctx, err):
+#     if isinstance(err, commands.BadArgument):
+#         await ctx.send('No Dice. Try: ``' + ctx.command.signature + '``')
 
 
 # @bot.command()
@@ -335,5 +335,13 @@ async def progress(ctx, *, cont):
                 await prog_channel.send(embed=emb)
         else:
             await ctx.author.send('Preview declined. Return to {}?'.format(msg.channel.mention))
+
+
+@progress.error
+async def progress_error(ctx, err):
+    if isinstance(err, commands.MissingRequiredArgument):
+        await ctx.message.add_reaction('❌')
+        await ctx.send("Ensure that your progress post contains text.")
+
 
 bot.run(token)
