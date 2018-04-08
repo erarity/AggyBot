@@ -4,7 +4,8 @@ import asyncio
 import io
 import aiohttp
 from discord.ext import commands
-from concurrent import futures
+from discord import Webhook, AsyncWebhookAdapter
+# from concurrent import futures
 
 bot = commands.Bot(command_prefix='>')
 
@@ -233,6 +234,8 @@ async def progress(ctx, *, cont):
     # Wait for half a second to ensure embeds are logged properly
     await asyncio.sleep(0.5)
 
+    new_embeds = []
+
     # Ensure that there is either an embed, a link, or an attachment.
     num_attach = len(ctx.message.attachments)
     num_embed = len(ctx.message.embeds)
@@ -264,6 +267,7 @@ async def progress(ctx, *, cont):
     # Simultaneously checks for special files such as .webms and .mp4
     sfile_url = None
     sfile_filename = None
+
     if msg.attachments:
         test_attach = msg.attachments[0]
         if test_attach.url.endswith('.webm') or test_attach.url.endswith('.mp4'):
@@ -274,27 +278,24 @@ async def progress(ctx, *, cont):
     elif msg.embeds:
         tar_embed = msg.embeds[0]
         if tar_embed:
-            if tar_embed.url:
-                if tar_embed.url.endswith('.webm') or tar_embed.url.endswith('.mp4'):
-                    sfile_url = tar_embed.url
-                    sfile_filename = tar_embed.url.split('/')[-1]
-                elif tar_embed.url.startswith('https://streamable.com/'):
-                    if tar_embed.video:
-                        sfile_url = tar_embed.video.url
-                        sfile_filename = tar_embed.title + '.mp4'
-                else:
-                    emb.set_image(url=tar_embed.url)
+            if tar_embed.url.endswith('.jpeg') or tar_embed.url.endswith('.jpg') or tar_embed.url.endswith('.gif') or tar_embed.url.endswith('.png'):
+                emb.set_image(url=tar_embed.url)
+                # if tar_embed.url.endswith('.webm') or tar_embed.url.endswith('.mp4'):
+                #     sfile_url = tar_embed.url
+                #     sfile_filename = tar_embed.url.split('/')[-1]
+                # elif tar_embed.url.startswith('https://streamable.com/'):
+                #     if tar_embed.video:
+                #         sfile_url = tar_embed.video.url
+                #         sfile_filename = tar_embed.title + '.mp4'
+                # else:
+            else:
+                sfile_url = tar_embed.url
+                # new_embeds.append(tar_embed)
 
     # Save special file
     sfile_download = None
     spec_file = None
-    if sfile_url:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(sfile_url) as w:
-                sfile_download = await w.read()
-                b = io.BytesIO(sfile_download)
-                if b:
-                    spec_file = discord.File(b, filename=sfile_filename)
+    # if sfile_url:
 
     # file_list = []
     # for attach in msg.attachments:
@@ -308,9 +309,14 @@ async def progress(ctx, *, cont):
     # Send the preview to the User and have them verify it before posting
     verify_text = '**Wow, nice progress!**\nBelow is a preview of your progress post. To confirm or decline just ' \
                   'react with ✅ or ❌ and we\'ll do the rest. Keep up the good work!\n\n**Preview:**\n'
-    verify_msg = await ctx.author.send(verify_text, embed=emb, file=spec_file)
-    await verify_msg.add_reaction('✅')
-    await verify_msg.add_reaction('❌')
+    verify_msg = await ctx.author.send(verify_text, embed=emb)
+    if sfile_url is not None:
+        second_msg = await ctx.author.send('Preview for: '+sfile_url)
+        await second_msg.add_reaction('✅')
+        await second_msg.add_reaction('❌')
+    else:
+        await verify_msg.add_reaction('✅')
+        await verify_msg.add_reaction('❌')
 
     # Detect the verification
     def check(reaction, user):
@@ -325,16 +331,40 @@ async def progress(ctx, *, cont):
         if str(reaction.emoji) == '✅':
             await ctx.author.send('Congratulations! You can view your new post in {} or return to {} and continue '
                                   'the discussion.'.format(prog_channel.mention, msg.channel.mention))
-            # Generate a second special file since the first is now closed
-            if spec_file:
-                c = io.BytesIO(sfile_download)
-                if c:
-                    spec_file = discord.File(c, filename=sfile_filename)
-                    await prog_channel.send(embed=emb, file=spec_file)
-            else:
-                await prog_channel.send(embed=emb)
+            # # Generate a second special file since the first is now closed
+            # if spec_file:
+            #     c = io.BytesIO(sfile_download)
+            #     if c:
+            #         spec_file = discord.File(c, filename=sfile_filename)
+            #         await prog_channel.send(embed=emb, file=spec_file)
+            # else:
+            #     await prog_channel.send(embed=emb)
+
+            # Send original progress embed.
+            await prog_channel.send(embed=emb)
+
+            # If it was determined that a second message is needed, supply it using a webhook
+            if sfile_url is not None:
+                # async with aiohttp.ClientSession() as session:
+                #     # async with session.get(sfile_url) as w:
+                #     #     sfile_download = await w.read()
+                #     #     b = io.BytesIO(sfile_download)
+                #     #     if b:
+                #     #         spec_file = discord.File(b, filename=sfile_filename)
+                #     webhook = Webhook.from_url(
+                #         # 'https://discordapp.com/api/webhooks/432317567281922048/R6LPxyopOsc_crQVb8E1E1rocBLR9PWs1Z5hja764lH3Vr-XbajM1yFD5z5lPoxVJNXd',
+                #         'https://discordapp.com/api/webhooks/432341830734970895/FRjHfi1IDmC6Jz02d_ktAQ2pbkQ046w4rAj4dhoCoFhBGE-qqaKL6Z33AUDCo0ePQqnJ',
+                #         adapter=AsyncWebhookAdapter(session))
+                #
+                #     await webhook.send(sfile_url, username='Preview for:')
+
+                # Quick experiment to see if bot quickly double posting will not produce that line
+                await prog_channel.send('Preview for: ' + sfile_url)
+
         else:
             await ctx.author.send('Preview declined. Return to {}?'.format(msg.channel.mention))
+
+
 
 
 @progress.error
