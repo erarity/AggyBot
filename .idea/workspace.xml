@@ -4,7 +4,6 @@
     <list default="true" id="e219b6aa-bf96-4439-aa6f-70c2326ae25a" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/AggyBot.py" afterPath="$PROJECT_DIR$/AggyBot.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/roles.json" afterPath="$PROJECT_DIR$/roles.json" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -19,8 +18,8 @@
       <file leaf-file-name="AggyBot.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/AggyBot.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1817">
-              <caret line="62" column="6" lean-forward="false" selection-start-line="62" selection-start-column="6" selection-end-line="62" selection-end-column="6" />
+            <state relative-caret-position="36">
+              <caret line="87" column="70" lean-forward="false" selection-start-line="87" selection-start-column="60" selection-end-line="87" selection-end-column="70" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -282,7 +281,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
+    <frame x="-8" y="-8" width="1382" height="744" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19213313" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -720,8 +719,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/AggyBot.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1817">
-          <caret line="62" column="6" lean-forward="false" selection-start-line="62" selection-start-column="6" selection-end-line="62" selection-end-column="6" />
+        <state relative-caret-position="36">
+          <caret line="87" column="70" lean-forward="false" selection-start-line="87" selection-start-column="60" selection-end-line="87" selection-end-column="70" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>

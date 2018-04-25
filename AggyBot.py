@@ -85,7 +85,7 @@ async def on_message_delete(message):
             nickname = ""
         else:
             nickname = "(" + nickname + ")"
-        await bot.log_channel.send('**User: **{} {} \n**Message: **{}'.format(message.author, nickname, message.content))
+        await bot.log_channel.send('**User: **{} {} in {} | ``Delete``\n**Message: **{}'.format(message.author, nickname, message.channel.mention, message.content))
 
 
 @bot.event
@@ -98,7 +98,7 @@ async def on_message_edit(before, after):
             nickname = ""
         else:
             nickname = "(" + nickname + ")"
-        await bot.log_channel.send('**User: **{} {}\n**Message: **{}'.format(before.author, nickname, before.content))
+        await bot.log_channel.send('**User: **{} {} in {} | ``Edit``\n**Message: **{}'.format(before.author, nickname, before.channel.mention, before.content))
 
 
 # @bot.event
@@ -305,6 +305,7 @@ async def progress(ctx, *, cont):
             print(msg.attachments[i].size)
 
         if test_attach.url.endswith('.webm') or test_attach.url.endswith('.mp4'):
+            # TODO: Add in a check for 8MB filesize here and if it is less, download and re-upload it.
             sfile_url = test_attach.url
             sfile_filename = test_attach.filename
         elif test_attach.width:
