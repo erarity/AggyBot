@@ -1,6 +1,7 @@
 import discord
 import json
 import asyncio
+import datetime
 import io
 import aiohttp
 from discord.ext import commands
@@ -26,7 +27,7 @@ skillsID = role_data["skills"]
 modID = role_data["moderator"]
 
 admin_chan_ID = role_data["admin"]
-leave_chan_ID = role_data["leaves"]
+log_chan_ID = role_data["logging"]
 prog_chan_ID = role_data["progress"]
 
 
@@ -39,23 +40,27 @@ async def on_ready():
     # await bot.change_presence(game=None)
 
     # Obtain the guild
-    agdg = bot.get_guild(121565307515961346)
-    print('Targeted guild is {0.name}'.format(agdg))
+    bot.agdg = bot.get_guild(121565307515961346)
+    print('Targeted guild is {0.name}'.format(bot.agdg))
 
     # Fetch channel objects
-    admin_channel = discord.utils.get(agdg.channels, id=admin_chan_ID)
-    print('Identified admin channel.\tName:{0.name}\tID:{0.id}'.format(admin_channel))
+    bot.admin_channel = bot.agdg.get_channel(admin_chan_ID)
+    print('Identified admin channel.\tName:{0.name}\tID:{0.id}'.format(bot.admin_channel))
 
-    leave_channel = discord.utils.get(agdg.channels, id=leave_chan_ID)
-    print('Identified log channel.\tName:{0.name}\tID:{0.id}'.format(leave_channel))
+    # Obtain the channel to log members leaving.
+    bot.log_channel = bot.agdg.get_channel(log_chan_ID)
+    print('Identified log channel.\tName:{0.name}\tID:{0.id}'.format(bot.log_channel))
+
+    # leave_channel = discord.utils.get(agdg.channels, id=leave_chan_ID)
+    # print('Identified log channel.\tName:{0.name}\tID:{0.id}'.format(leave_channel))
 
 
 @bot.event
 async def on_member_remove(mem):
 
-    # Obtain the channel to log members leaving.
-    leave_channel = discord.utils.get(mem.guild.channels, id=leave_chan_ID)
-    print('Identified log channel.\tName:{0.name}\tID:{0.id}'.format(leave_channel))
+    # Calculate duration of stay
+    # time_spent = utcnow() - mem.joined_at
+    # print('Time spent on server: ' + time_spent)
 
     nickname = mem.nick
     if nickname is None:
@@ -67,9 +72,33 @@ async def on_member_remove(mem):
             print("A user left the server with the prisoner role.")
             # Obtain reference to moderator role
             mod_role_obj = discord.utils.get(mem.guild.roles, id=modID)
-            await leave_channel.send(mod_role_obj.mention + " {} {} has left the server with the prisoner role.".format(mem, nickname))
+            await bot.log_channel.send(mod_role_obj.mention + " {} {} has left the server with the prisoner role.".format(mem, nickname))
             return
-    await leave_channel.send("{} {} has left the server.".format(mem, nickname))
+    await bot.log_channel.send("{} {} has left the server.".format(mem, nickname))
+
+
+@bot.event
+async def on_message_delete(message):
+    if len(message.mentions) > 0 or len(message.role_mentions) > 0:
+        nickname = message.author.nick
+        if nickname is None:
+            nickname = ""
+        else:
+            nickname = "(" + nickname + ")"
+        await bot.log_channel.send('**User: **{} {} \n**Message: **{}'.format(message.author, nickname, message.content))
+
+
+@bot.event
+async def on_message_edit(before, after):
+    ping_before = len(before.mentions) > 0 or len(before.role_mentions) > 0
+    ping_after = len(after.mentions) > 0 or len(after.role_mentions) > 0
+    if ping_before and not ping_after:
+        nickname = before.author.nick
+        if nickname is None:
+            nickname = ""
+        else:
+            nickname = "(" + nickname + ")"
+        await bot.log_channel.send('**User: **{} {}\n**Message: **{}'.format(before.author, nickname, before.content))
 
 
 # @bot.event
@@ -270,6 +299,11 @@ async def progress(ctx, *, cont):
 
     if msg.attachments:
         test_attach = msg.attachments[0]
+
+        # Quick debug to see how sizes are printed.
+        for i in range(len(msg.attachments)):
+            print(msg.attachments[i].size)
+
         if test_attach.url.endswith('.webm') or test_attach.url.endswith('.mp4'):
             sfile_url = test_attach.url
             sfile_filename = test_attach.filename
