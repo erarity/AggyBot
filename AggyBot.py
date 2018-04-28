@@ -9,6 +9,8 @@ from discord import Webhook, AsyncWebhookAdapter
 # from concurrent import futures
 
 bot = commands.Bot(command_prefix='>')
+testId = bot.user.id
+
 
 # react_timer = 7
 
@@ -79,6 +81,10 @@ async def on_member_remove(mem):
 
 @bot.event
 async def on_message_delete(message):
+
+    if message.author == bot.user:
+        return
+
     if len(message.mentions) > 0 or len(message.role_mentions) > 0:
         nickname = message.author.nick
         if nickname is None:
@@ -90,6 +96,10 @@ async def on_message_delete(message):
 
 @bot.event
 async def on_message_edit(before, after):
+
+    if before.author == bot.user:
+        return
+
     ping_before = len(before.mentions) > 0 or len(before.role_mentions) > 0
     ping_after = len(after.mentions) > 0 or len(after.role_mentions) > 0
     if ping_before and not ping_after:
