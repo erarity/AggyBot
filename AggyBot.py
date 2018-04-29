@@ -9,7 +9,6 @@ from discord import Webhook, AsyncWebhookAdapter
 # from concurrent import futures
 
 bot = commands.Bot(command_prefix='>')
-testId = bot.user.id
 
 
 # react_timer = 7
