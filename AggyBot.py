@@ -1,9 +1,9 @@
 import discord
 import json
 import asyncio
-import datetime
 import io
 import aiohttp
+from datetime import datetime
 from discord.ext import commands
 from discord import Webhook, AsyncWebhookAdapter
 # from concurrent import futures
@@ -61,7 +61,7 @@ async def on_ready():
 async def on_member_remove(mem):
 
     # Calculate duration of stay
-    # time_spent = utcnow() - mem.joined_at
+    # time_spent = datetime.utcnow() - mem.joined_at
     # print('Time spent on server: ' + time_spent)
 
     nickname = mem.nick
@@ -70,6 +70,7 @@ async def on_member_remove(mem):
     else:
         nickname = "(" + nickname + ")"
     for role in mem.roles:
+        # Special reporting if they're a prisoner that's leaving/
         if role.id == prisonerID:
             print("A user left the server with the prisoner role.")
             # Obtain reference to moderator role
