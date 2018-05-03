@@ -271,7 +271,7 @@ async def progress(ctx, *, cont):
 
 
     # Wait for half a second to ensure embeds are logged properly
-    if not ctx.message.embeds or ctx.message.attachments:
+    if not ctx.message.embeds and not ctx.message.attachments:
         await bot.wait_for('message_edit', timeout=2.0)
 
     # Ensure that there is either an embed, a link, or an attachment.
@@ -310,6 +310,13 @@ async def progress(ctx, *, cont):
         test_attach = msg.attachments[0]
 
         # Quick debug to see how sizes are printed.
+
+        # *****************************************
+        #     /!\ /!\ IMPORTANT NOTE /!\ /!\
+        # *****************************************
+        # 8MB is equal to 8388608 bytes in binary.
+        # Check against this size!
+
         for i in range(len(msg.attachments)):
             print(msg.attachments[i].size)
 
