@@ -393,7 +393,7 @@ async def progress(ctx, *, cont):
             # Send original progress embed.
             await prog_channel.send(embed=emb)
 
-            # If it was determined that a second message is needed, supply it using a webhook
+            # If it was determined that a second message is needed, send  that too.
             if sfile_url is not None:
                 # async with aiohttp.ClientSession() as session:
                 #     # async with session.get(sfile_url) as w:
