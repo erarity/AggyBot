@@ -309,14 +309,8 @@ async def progress(ctx, *, cont):
     if msg.attachments:
         test_attach = msg.attachments[0]
 
-        # Quick debug to see how sizes are printed.
-
-        # *****************************************
-        #     /!\ /!\ IMPORTANT NOTE /!\ /!\
-        # *****************************************
         # 8MB is equal to 8388608 bytes in binary.
-        # Check against this size!
-
+        # TODO: Remove this debug print and use it to check against filesize.
         for i in range(len(msg.attachments)):
             print(msg.attachments[i].size)
 
