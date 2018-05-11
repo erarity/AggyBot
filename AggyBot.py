@@ -86,6 +86,9 @@ async def on_message_delete(message):
         return
 
     if len(message.mentions) > 0 or len(message.role_mentions) > 0:
+        # Check if the message was created more than 20 minutes ago.
+        if(datetime.utcnow() - message.created_at).total_seconds() > 1200:
+            return
         nickname = message.author.nick
         if nickname is None:
             nickname = ""
