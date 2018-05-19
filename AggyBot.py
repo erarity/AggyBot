@@ -1,12 +1,14 @@
 import discord
 import json
 import asyncio
+import traceback
+import sys
 import io
 import aiohttp
+import AnonymousPost
 from datetime import datetime
 from discord.ext import commands
 from discord import Webhook, AsyncWebhookAdapter
-# from concurrent import futures
 
 bot = commands.Bot(command_prefix='>')
 
@@ -30,6 +32,7 @@ modID = role_data["moderator"]
 admin_chan_ID = role_data["admin"]
 log_chan_ID = role_data["logging"]
 prog_chan_ID = role_data["progress"]
+anon_chan_ID = role_data["anonymous"]
 
 
 @bot.event
@@ -51,6 +54,9 @@ async def on_ready():
     # Obtain the channel to log members leaving.
     bot.log_channel = bot.agdg.get_channel(log_chan_ID)
     print('Identified log channel.\tName:{0.name}\tID:{0.id}'.format(bot.log_channel))
+
+    # Obtain the channel for anonymous posting.
+    bot.anon_channel = bot.agdg.get_channel(anon_chan_ID)
 
     # leave_channel = discord.utils.get(agdg.channels, id=leave_chan_ID)
     # print('Identified log channel.\tName:{0.name}\tID:{0.id}'.format(leave_channel))
@@ -114,11 +120,34 @@ async def on_message_edit(before, after):
         await bot.log_channel.send('**User: **{} {} in {} | ``Edit``\n**Message: **{}'.format(before.author, nickname, before.channel.mention, before.content))
 
 
-# @bot.event
-# async def on_command_error(ctx, err):
-#     if isinstance(err, commands.BadArgument):
-#         await ctx.send('No Dice. Try: ``' + ctx.command.signature + '``')
+@bot.event
+async def on_command_error(ctx, err):
+    # Most logic borrowed from: https://gist.github.com/EvieePy/7822af90858ef65012ea500bcecf1612
+    # Any commands with local error handlers will refer to that protocol instead.
+    if hasattr(ctx.command, 'on_error'):
+        return
 
+    # Checks for original exceptions raised and sent to CommandInvokeError.
+    err = getattr(err, 'original', err)
+
+    # These are common errors that will log with benign consequences.
+    # Anything in ignored will return and prevent anything happening.
+    ignored = (commands.CommandNotFound, commands.UserInputError)
+    if isinstance(err, ignored):
+        return
+
+    elif isinstance(err, commands.DisabledCommand):
+        return await ctx.send(f'{ctx.command} has been disabled.')
+
+    elif isinstance(err, commands.NoPrivateMessage):
+        try:
+            return await ctx.author.send(f'{ctx.command} can not be used in Private Messages.')
+        except discord.Forbidden:
+            pass
+
+    # All other commands are handled as default here.
+    print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
+    traceback.print_exception(type(err), err, err.__traceback__, file=sys.stderr)
 
 # @bot.command()
 # @commands.has_permissions(manage_roles=True)
@@ -261,6 +290,48 @@ async def checkrole(ctx, *, arg1):
             await ctx.channel.send('There are {} users with the {} role.'.format(len(role.members), role.name))
 
 
+# Dumb way to disable a command from source.
+# TODO: Remove this check once anon command functionality is completed.
+def anon_check(ctx):
+    return False
+
+
+@bot.command()
+@commands.check(anon_check)
+async def anon(ctx, *, cont):
+
+    # if(ctx.author)
+
+    # Wait for half a second to ensure embeds are logged properly
+    # if not ctx.message.embeds and not ctx.message.attachments:
+    #     await bot.wait_for('message_edit', timeout=1.5)
+
+    ac = bot.anon_channel
+
+    ret_id = await AnonymousPost.hash_id(str(ctx.author))
+    await ctx.author.send('You are about to post the following message. To confirm or deny just reply with ✅ or ❌.')
+    preview_msg = await ctx.author.send(f' | ID: ``{ret_id}``\n{cont}')
+    await preview_msg.add_reaction('✅')
+    await preview_msg.add_reaction('❌')
+
+    # Detect the verification
+    def check(reaction, user):
+        return (user == ctx.author and str(reaction.emoji) == '✅') or (user == ctx.author and str(reaction.emoji) == '❌')
+
+    try:
+        reaction, user = await bot.wait_for('reaction_add', timeout=120.0, check=check)
+    except asyncio.TimeoutError:
+        await ctx.author.send(f'Previous preview has timed out. Return to {ac.mention}?')
+        return
+    else:
+        if str(reaction.emoji) == '✅':
+            await ctx.author.send(f'You can view your new post in {ac.mention}')
+            await ac.send(f' | ID: ``{ret_id}``\n{cont}')
+
+        else:
+            await ctx.author.send(f'Preview declined. Return to {ac.mention}?')
+
+
 @bot.command()
 async def progress(ctx, *, cont):
 
@@ -378,34 +449,10 @@ async def progress(ctx, *, cont):
         if str(reaction.emoji) == '✅':
             await ctx.author.send('Congratulations! You can view your new post in {} or return to {} and continue '
                                   'the discussion.'.format(prog_channel.mention, msg.channel.mention))
-            # # Generate a second special file since the first is now closed
-            # if spec_file:
-            #     c = io.BytesIO(sfile_download)
-            #     if c:
-            #         spec_file = discord.File(c, filename=sfile_filename)
-            #         await prog_channel.send(embed=emb, file=spec_file)
-            # else:
-            #     await prog_channel.send(embed=emb)
-
-            # Send original progress embed.
             await prog_channel.send(embed=emb)
 
             # If it was determined that a second message is needed, send  that too.
             if sfile_url is not None:
-                # async with aiohttp.ClientSession() as session:
-                #     # async with session.get(sfile_url) as w:
-                #     #     sfile_download = await w.read()
-                #     #     b = io.BytesIO(sfile_download)
-                #     #     if b:
-                #     #         spec_file = discord.File(b, filename=sfile_filename)
-                #     webhook = Webhook.from_url(
-                #         # 'https://discordapp.com/api/webhooks/432317567281922048/R6LPxyopOsc_crQVb8E1E1rocBLR9PWs1Z5hja764lH3Vr-XbajM1yFD5z5lPoxVJNXd',
-                #         'https://discordapp.com/api/webhooks/432341830734970895/FRjHfi1IDmC6Jz02d_ktAQ2pbkQ046w4rAj4dhoCoFhBGE-qqaKL6Z33AUDCo0ePQqnJ',
-                #         adapter=AsyncWebhookAdapter(session))
-                #
-                #     await webhook.send(sfile_url, username='Preview for:')
-
-                # Quick experiment to see if bot quickly double posting will not produce that line
                 await prog_channel.send('Preview for: ' + sfile_url)
 
         else:
