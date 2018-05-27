@@ -217,35 +217,89 @@ async def color(ctx, col):
 
 
 @bot.command()
-async def addskill(ctx, skill):
-    # await ctx.channel.send('Adding skill')
-    skills = discord.utils.get(ctx.guild.roles, id=226331683996172288)
+async def addskill(ctx, *skills):
 
-    # Iterate through the sublist
-    sorted_roles = sorted(ctx.guild.roles)
-    for s in sorted_roles[:skills.position]:
-        if s.name.lower() == skill.lower():
-            await ctx.author.add_roles(s)
-            await ctx.message.add_reaction('✅')
-            return
-    await ctx.message.add_reaction('❌')
+    skill_role = discord.utils.get(bot.agdg.roles, id=226331683996172288)
+
+    # Make all the args lowercase.
+    roles_not_added = []
+    for s in skills:
+        roles_not_added.append(s.lower())
+
+    # Iterate through the role sublist
+    roles_to_add = []
+    sorted_roles = sorted(bot.agdg.roles)
+    for s in sorted_roles[:skill_role.position]:
+        if s.name.lower() in roles_not_added:
+            roles_to_add.append(s)
+            roles_not_added.remove(s.name.lower())
+
+    # Add all of the successfully identified roles to the Member (and User -> Member if DM)
+    if isinstance(ctx.channel, discord.DMChannel):
+        mem = bot.agdg.get_member(ctx.author.id)
+        if mem is not None:
+            await mem.add_roles(*roles_to_add)
+    else:
+        await ctx.author.add_roles(*roles_to_add)
+
+    # If any roles failed to be added, log which roles were added and which failed.
+    if len(roles_not_added) > 0:
+        if len(skills) > 1 and len(roles_not_added) < len(skills):
+            for idx, role in enumerate(roles_to_add):
+                roles_to_add[idx] = role.name
+            await ctx.send(f'Only role(s) {", ".join(roles_to_add)} added.')
+        else:
+            await ctx.message.add_reaction('❌')
+    else:
+        await ctx.message.add_reaction('✅')
 
 
 @bot.command()
-async def removeskill(ctx, skill):
-    # await ctx.channel.send('Removing skill')
-    # target_role = discord.utils.get(ctx.guild.roles, name=skill)
-    skills = discord.utils.get(ctx.guild.roles, id=226331683996172288)
+async def removeskill(ctx, *skills):
 
-    sorted_roles = sorted(ctx.guild.roles)
-    for s in sorted_roles[:skills.position]:
-        if s.name.lower() == skill.lower():
-            await ctx.author.remove_roles(s)
-            await ctx.message.add_reaction('✅')
+    mem = None
+    mem_roles = None
+    if isinstance(ctx.channel, discord.DMChannel):
+        mem = bot.agdg.get_member(ctx.author.id)
+        if mem is None:
+            # Why are you using my bot, huh?
             return
-    await ctx.message.add_reaction('❌')
-    # await asyncio.sleep(react_timer)
-    # await ctx.message.remove_reaction('✅', ctx.guild.me)
+        else:
+            mem_roles = mem.roles
+    else:
+        mem_roles = ctx.author.roles
+
+    # Make all the args lowercase.
+    roles_not_removed = []
+    for s in skills:
+        roles_not_removed.append(s.lower())
+
+    # Iterate through the role sublist
+    roles_to_remove = []
+    for s in mem_roles:
+        if s.name.lower() in roles_not_removed:
+            roles_to_remove.append(s)
+            roles_not_removed.remove(s.name.lower())
+
+    # Add all of the successfully identified roles to the Member (and User -> Member if DM)
+    if isinstance(ctx.channel, discord.DMChannel):
+        mem = bot.agdg.get_member(ctx.author.id)
+        if mem is not None:
+            await mem.remove_roles(*roles_to_remove)
+
+    else:
+        await ctx.author.remove_roles(*roles_to_remove)
+
+    # If any roles failed to be removed, log which roles were removed and which failed.
+    if len(roles_not_removed) > 0:
+        if len(skills) > 1 and len(roles_not_removed) < len(skills):
+            for idx, role in enumerate(roles_to_remove):
+                roles_to_remove[idx] = role.name
+            await ctx.send(f'Only role(s) {", ".join(roles_to_remove)} removed.')
+        else:
+            await ctx.message.add_reaction('❌')
+    else:
+        await ctx.message.add_reaction('✅')
 
 
 @bot.command()
@@ -257,7 +311,7 @@ async def jail(ctx, member: discord.Member, time: int=30, *, reason=None):
 
     if not member.top_role >= mod_role:
 
-        await member.add_roles(jail_role)
+        await member.add_roles(jail_role, reason)
 
         # Determine if the reason needs to be tacked on
         if reason is not None:
@@ -268,11 +322,11 @@ async def jail(ctx, member: discord.Member, time: int=30, *, reason=None):
         # TODO: Log the jailing to the audit log and json file.
 
         # Send out notifications on all appropriate channels.
-        ctx.send('**{} was jailed for {} minutes.**'.format(member.display_name, time) + full_reason)
+        await bot.log_channel.send('**{} was jailed for {} minutes.**'.format(member.display_name, time) + full_reason)
 
         # Wait the determined amount of time before removing the role.
         await asyncio.sleep(float(time*60))
-        await member.remove_roles(jail_role)
+        await member.remove_roles(jail_role, "Automatic removal by bot.")
 
 
 @bot.command()
@@ -369,10 +423,7 @@ async def progress(ctx, *, cont):
     # Construct the embed
     sig = '\n\n*Posted in* {0.channel.mention} *by* {0.author.mention}'.format(msg)
     emb = discord.Embed(color=msg.author.color, description=cont + sig, timestamp=msg.created_at)
-    # emb.title = '**Progress**' can put this in constructor if needed
     emb.set_author(name=str(msg.author.display_name), icon_url=msg.author.avatar_url)
-    # emb.set_thumbnail(url=ctx.guild.icon_url)
-    # emb.add_field(name='Follow-up', value='Originally posted by {0.author.mention} in {0.channel.mention}'.format(msg))
     emb.set_footer(text='Originally posted in #{0.channel}'.format(msg), icon_url=ctx.guild.icon_url)
 
     # Determine which image to display
@@ -457,8 +508,6 @@ async def progress(ctx, *, cont):
 
         else:
             await ctx.author.send('Preview declined. Return to {}?'.format(msg.channel.mention))
-
-
 
 
 @progress.error
