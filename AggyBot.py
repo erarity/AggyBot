@@ -311,7 +311,7 @@ async def jail(ctx, member: discord.Member, time: int=30, *, reason=None):
 
     if not member.top_role >= mod_role:
 
-        await member.add_roles(jail_role, reason)
+        await member.add_roles(jail_role, reason=reason)
 
         # Determine if the reason needs to be tacked on
         if reason is not None:
@@ -322,11 +322,17 @@ async def jail(ctx, member: discord.Member, time: int=30, *, reason=None):
         # TODO: Log the jailing to the audit log and json file.
 
         # Send out notifications on all appropriate channels.
-        await bot.log_channel.send('**{} was jailed for {} minutes.**'.format(member.display_name, time) + full_reason)
+        await bot.log_channel.send('**{}** was jailed for **{} minute(s)**'.format(member.display_name, time) + full_reason)
 
         # Wait the determined amount of time before removing the role.
         await asyncio.sleep(float(time*60))
-        await member.remove_roles(jail_role, "Automatic removal by bot.")
+        if jail_role in member.roles:
+            await member.remove_roles(jail_role, reason="Automatic removal by bot.")
+            await bot.log_channel.send(
+                '**{}** was unjailed automatically after **{} minutes(s)**'.format(member.display_name, time))
+        else:
+            await bot.log_channel.send(
+                'The jail time of **{} minutes(s)** expired for **{}** but their Prisoner role was already removed.'.format(time, member.display_name))
 
 
 @bot.command()
