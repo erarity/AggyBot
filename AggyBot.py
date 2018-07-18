@@ -3,6 +3,7 @@ import json
 import asyncio
 import traceback
 import sys
+import math
 import io
 import aiohttp
 import AnonymousPost
@@ -149,13 +150,28 @@ async def on_command_error(ctx, err):
     print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
     traceback.print_exception(type(err), err, err.__traceback__, file=sys.stderr)
 
-# @bot.command()
-# @commands.has_permissions(manage_roles=True)
-# async def showroles(ctx):
-#     await ctx.send('displaying all roles')
-#     sorted_roles = sorted(ctx.guild.roles)
-#     for i in sorted_roles:
-#         await ctx.send('{}\t{}\t{}'.format(i.position, i.name, i.id))
+# TODO: Make this not a hacky piece of crap. Consider using a generated .txt file to bypass 2k character limit.
+@bot.command()
+@commands.has_permissions(manage_roles=True)
+async def formatroles(ctx):
+    await ctx.send(f'Displaying information for {len(ctx.guild.roles)} roles:')
+    sorted_roles = sorted(ctx.guild.roles)
+
+    chunk_size = int(math.ceil(math.sqrt(len(sorted_roles))))
+    first_limit = 0
+    second_limit = chunk_size
+    while first_limit <= len(sorted_roles):
+        list_chunk = []
+        for i in sorted_roles[first_limit:second_limit]:
+            list_chunk.append('{}\t{}\t{}\n'.format(i.position, i.name, i.id))
+        await ctx.send(f'```{first_limit} to {second_limit}:\n{"".join(list_chunk)} ```')
+
+        # Advance the limits to the next bracket
+        first_limit += chunk_size
+        second_limit += chunk_size
+        if second_limit > len(sorted_roles):
+            second_limit = len(sorted_roles)
+
 
 
 # @bot.command()
@@ -274,10 +290,21 @@ async def removeskill(ctx, *skills):
     for s in skills:
         roles_not_removed.append(s.lower())
 
+    # Prep the server role list so that users can't remove special use roles.
+    sorted_list = sorted(bot.agdg.roles)
+    skill_role = discord.utils.get(ctx.guild.roles, id=skillsID)
+    public_roles = sorted_list[:skill_role.position]
+
     # Iterate through the role sublist
+    roles_to_verify = []
+    # Ignore any roles outside of the skills bracket.
+    for r in mem_roles:
+        if r.name.lower() in roles_not_removed:
+            roles_to_verify.append(r.name.lower())
+
     roles_to_remove = []
-    for s in mem_roles:
-        if s.name.lower() in roles_not_removed:
+    for s in public_roles:
+        if s.name.lower() in roles_to_verify:
             roles_to_remove.append(s)
             roles_not_removed.remove(s.name.lower())
 
