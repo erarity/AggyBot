@@ -4,25 +4,34 @@ import asyncio
 import traceback
 import sys
 import math
+import config
 import io
 import aiohttp
 import AnonymousPost
 from datetime import datetime
 from discord.ext import commands
-from discord import Webhook, AsyncWebhookAdapter
+from cogs.utils import checks, context, db
+from cogs.utils.db import Table
 
 bot = commands.Bot(command_prefix='>')
 
+initial_extensions = ['cogs.owner',
+                      'cogs.rolekeeper']
+                    # 'cogs.tags
 
-# react_timer = 7
+if __name__ == '__main__':
+    for extension in initial_extensions:
+        try:
+            bot.load_extension(extension)
+        except Exception as e:
+            print(f'Failed to load extension {extension}.', file=sys.stderr)
+            traceback.print_exc()
 
 # Obtain the token
-with open('token.json') as token_file:
-    token_data = json.load(token_file)
-token = token_data["token"]
+token = config.token
 
 # Obtain the role ids.
-with open('roles.json') as role_file:
+with open('ids.json') as role_file:
     role_data = json.load(role_file)
 
 prisonerID = role_data["prisoner"]
@@ -35,14 +44,22 @@ log_chan_ID = role_data["logging"]
 prog_chan_ID = role_data["progress"]
 anon_chan_ID = role_data["anonymous"]
 
+# # Attempt to setup the PostgreSQL pool
+# loop = asyncio.get_event_loop()
+# try:
+#     pool = loop.run_until_complete(Table.create_pool(config.postgresql, command_timout=60))
+# except Exception as e:
+#     print('Could not set up PostreSQL. Exiting.')
+#
+# bot.pool = pool
+
 
 @bot.event
 async def on_ready():
     print('Bot ready!')
     print('Logged in as {0.user.name}'.format(bot))
-    print('----------')
-    # game = discord.Game(name='your shitty games.')
-    # await bot.change_presence(game=None)
+
+    await bot.change_presence(game=discord.Game(name="Maintenance"))
 
     # Obtain the guild
     bot.agdg = bot.get_guild(121565307515961346)
@@ -50,11 +67,9 @@ async def on_ready():
 
     # Fetch channel objects
     bot.admin_channel = bot.agdg.get_channel(admin_chan_ID)
-    print('Identified admin channel.\tName:{0.name}\tID:{0.id}'.format(bot.admin_channel))
 
     # Obtain the channel to log members leaving.
     bot.log_channel = bot.agdg.get_channel(log_chan_ID)
-    print('Identified log channel.\tName:{0.name}\tID:{0.id}'.format(bot.log_channel))
 
     # Obtain the channel for anonymous posting.
     bot.anon_channel = bot.agdg.get_channel(anon_chan_ID)
@@ -62,6 +77,7 @@ async def on_ready():
     # leave_channel = discord.utils.get(agdg.channels, id=leave_chan_ID)
     # print('Identified log channel.\tName:{0.name}\tID:{0.id}'.format(leave_channel))
 
+    print('----------')
 
 @bot.event
 async def on_member_remove(mem):
@@ -84,6 +100,23 @@ async def on_member_remove(mem):
             await bot.log_channel.send(mod_role_obj.mention + " {} {} has left the server with the prisoner role.".format(mem, nickname))
             return
     await bot.log_channel.send("{} {} has left the server.".format(mem, nickname))
+
+
+# async def process_commands(message):
+#     ctx = await bot.get_context(message, cls=context.Context)
+#
+#     if ctx.command is None:
+#         return
+#
+#     async with ctx.acquire():
+#         await bot.invoke(ctx)
+#
+#
+# @bot.event
+# async def on_message(message):
+#     if message.author.bot:
+#         return
+#     await process_commands(message)
 
 
 @bot.event
@@ -292,7 +325,7 @@ async def removeskill(ctx, *skills):
 
     # Prep the server role list so that users can't remove special use roles.
     sorted_list = sorted(bot.agdg.roles)
-    skill_role = discord.utils.get(ctx.guild.roles, id=skillsID)
+    skill_role = discord.utils.get(bot.agdg.roles, id=skillsID)
     public_roles = sorted_list[:skill_role.position]
 
     # Iterate through the role sublist
@@ -469,8 +502,6 @@ async def progress(ctx, *, cont):
 
         # 8MB is equal to 8388608 bytes in binary.
         # TODO: Remove this debug print and use it to check against filesize.
-        for i in range(len(msg.attachments)):
-            print(msg.attachments[i].size)
 
         if test_attach.url.endswith('.webm') or test_attach.url.endswith('.mp4'):
             # TODO: Add in a check for 8MB filesize here and if it is less, download and re-upload it.
