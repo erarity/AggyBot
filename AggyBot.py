@@ -5,6 +5,7 @@ import traceback
 import sys
 import math
 import config
+import copy
 import io
 import aiohttp
 import AnonymousPost
@@ -44,6 +45,9 @@ log_chan_ID = role_data["logging"]
 prog_chan_ID = role_data["progress"]
 anon_chan_ID = role_data["anonymous"]
 
+# Invite tracking
+stored_invites = {}
+
 # # Attempt to setup the PostgreSQL pool
 # loop = asyncio.get_event_loop()
 # try:
@@ -77,7 +81,36 @@ async def on_ready():
     # leave_channel = discord.utils.get(agdg.channels, id=leave_chan_ID)
     # print('Identified log channel.\tName:{0.name}\tID:{0.id}'.format(leave_channel))
 
+    #Capture the current state of invites.
+    invites = await bot.agdg.invites();
+    for invite in invites:
+        stored_invites[invite] = invite.uses
+
     print('----------')
+
+@bot.event
+async def on_member_join(mem):
+    potential_links = []
+    invites = await bot.agdg.invites()
+    for invite in invites:
+        if invite.uses != stored_invites.get(invite, -1):
+            await bot.log_channel.send(f'{mem} has **joined** the server. (Invite: {invite.code} - Created by: {invite.inviter})')
+            break
+        elif invite not in stored_invites or invite.uses == invite.max_uses:
+            potential_links.append(invite)
+
+    if len(potential_links) > 0:
+        ret_list = []
+        for plink in potential_links:
+            ret_list.append(f'\nInvite: {plink.code} - Created by: {plink.inviter}')
+        await bot.log_channel.send(f'{mem} has **joined** the server.\nPossible Invites:{ret_list}')
+
+    # Update the stored invite information to reflect the updated values.
+        stored_invites.clear()
+        for invite in invites:
+            stored_invites[invite] = invite.uses
+
+
 
 @bot.event
 async def on_member_remove(mem):
@@ -94,12 +127,12 @@ async def on_member_remove(mem):
     for role in mem.roles:
         # Special reporting if they're a prisoner that's leaving/
         if role.id == prisonerID:
-            print("A user left the server with the prisoner role.")
+            print("A user **left** the server with the prisoner role.")
             # Obtain reference to moderator role
             mod_role_obj = discord.utils.get(mem.guild.roles, id=modID)
-            await bot.log_channel.send(mod_role_obj.mention + " {} {} has left the server with the prisoner role.".format(mem, nickname))
+            await bot.log_channel.send(mod_role_obj.mention + " {} {} has **left** the server with the prisoner role.".format(mem, nickname))
             return
-    await bot.log_channel.send("{} {} has left the server.".format(mem, nickname))
+    await bot.log_channel.send("{} {} has **left** the server.".format(mem, nickname))
 
 
 # async def process_commands(message):

@@ -34,13 +34,13 @@ class RoleKeeper:
             member_json = self.json_data['members'].pop(member.id)
 
             role_list = [discord.Object(id=r_id) for r_id in member_json['roles']]
-            await self.bot.add_roles(member, *role_list)
+            await member.add_roles(member, *role_list)
 
             # Reassign their nickname on file.
             # TODO: Consider removing this?
             try:
                 if member_json['nickname'] != 'None':
-                    await self.bot.change_nickname(member, member_json['nickname'])
+                    await member.edit(nick=member_json['nickname'])
             except discord.Forbidden:
                 pass
 
