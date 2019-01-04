@@ -102,8 +102,9 @@ async def on_member_join(mem):
     if len(potential_links) > 0:
         ret_list = []
         for plink in potential_links:
-            ret_list.append(f'\nInvite: {plink.code} - Created by: {plink.inviter}')
-        await bot.log_channel.send(f'{mem} has **joined** the server.\nPossible Invites:{ret_list}')
+            ret_list.append(f'Invite: {plink.code} - Created by: {plink.inviter}')
+        ret_string = '\n'.join(ret_list)
+        await bot.log_channel.send(f'{mem} has **joined** the server.\nPossible Invites:{ret_string}')
 
     # Update the stored invite information to reflect the updated values.
         stored_invites.clear()
@@ -406,6 +407,8 @@ async def jail(ctx, member: discord.Member, time: int=30, *, reason=None):
 
         await member.add_roles(jail_role, reason=reason)
 
+        await ctx.message.add_reaction('✅')
+
         # Determine if the reason needs to be tacked on
         if reason is not None:
             full_reason = ' Reason: {}'.format(reason)
@@ -427,6 +430,7 @@ async def jail(ctx, member: discord.Member, time: int=30, *, reason=None):
             await bot.log_channel.send(
                 'The jail time of **{} minutes(s)** expired for **{}** but their Prisoner role was already removed.'.format(time, member.display_name))
 
+    ctx.message.add_reaction('❌')
 
 @bot.command()
 @commands.has_permissions(kick_members=True)
