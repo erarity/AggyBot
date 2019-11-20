@@ -3,7 +3,7 @@ async-timeout==2.0.0
 chardet==3.0.4
 -e git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py
 dj-database-url==0.4.2
-Django==1.11.4
+Django==1.11.23
 gunicorn==19.7.1
 multidict==3.3.0
 psycopg2==2.7.3.1
