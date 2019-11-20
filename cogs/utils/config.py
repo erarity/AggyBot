@@ -3,7 +3,6 @@ import os
 import uuid
 import asyncio
 
-
 class Config:
     """The "database" object. Internally based on ``json``."""
 

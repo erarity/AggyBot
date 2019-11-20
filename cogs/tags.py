@@ -114,7 +114,7 @@ class TagName(commands.clean_content):
 
         return converted if not self.lower else lower
 
-class Tags:
+class Tags(commands.Cog):
     """The tag related commands."""
 
     def __init__(self, bot):

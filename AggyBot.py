@@ -63,7 +63,8 @@ async def on_ready():
     print('Bot ready!')
     print('Logged in as {0.user.name}'.format(bot))
 
-    await bot.change_presence(game=discord.Game(name="Maintenance"))
+    game = discord.Game("Maintenance")
+    await bot.change_presence(status=discord.Status.do_not_disturb, activity=game)
 
     # Obtain the guild
     bot.agdg = bot.get_guild(121565307515961346)
@@ -107,9 +108,9 @@ async def on_member_join(mem):
         await bot.log_channel.send(f'{mem} has **joined** the server.\nPossible Invites:{ret_string}')
 
     # Update the stored invite information to reflect the updated values.
-        stored_invites.clear()
-        for invite in invites:
-            stored_invites[invite] = invite.uses
+    stored_invites.clear()
+    for invite in invites:
+        stored_invites[invite] = invite.uses
 
 
 
@@ -551,30 +552,8 @@ async def progress(ctx, *, cont):
         if tar_embed:
             if tar_embed.url.endswith('.jpeg') or tar_embed.url.endswith('.jpg') or tar_embed.url.endswith('.gif') or tar_embed.url.endswith('.png'):
                 emb.set_image(url=tar_embed.url)
-                # if tar_embed.url.endswith('.webm') or tar_embed.url.endswith('.mp4'):
-                #     sfile_url = tar_embed.url
-                #     sfile_filename = tar_embed.url.split('/')[-1]
-                # elif tar_embed.url.startswith('https://streamable.com/'):
-                #     if tar_embed.video:
-                #         sfile_url = tar_embed.video.url
-                #         sfile_filename = tar_embed.title + '.mp4'
-                # else:
             else:
                 sfile_url = tar_embed.url
-
-    # Save special file
-    sfile_download = None
-    spec_file = None
-    # if sfile_url:
-
-    # file_list = []
-    # for attach in msg.attachments:
-    #     b = io.BytesIO()
-    #     await attach.save(b)
-    #     f = discord.File(b, attach.filename)
-    #     file_list.append(f)
-
-    # await prog_channel.send(content='``Channel:`` {0.channel.mention}\t``Author:`` {0.author.mention}\n'.format(msg) + cont, files=file_list)
 
     # Send the preview to the User and have them verify it before posting
     verify_text = '**Wow, nice progress!**\nBelow is a preview of your progress post. To confirm or decline just ' \

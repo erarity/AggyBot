@@ -1,11 +1,11 @@
 from discord.ext import commands
 import discord
-import asyncio
+
 # from checks import mod_or_permissions, is_owner
 import json
 
 
-class RoleKeeper:
+class RoleKeeper(commands.Cog):
     """"""
 
     def __init__(self, bot):
