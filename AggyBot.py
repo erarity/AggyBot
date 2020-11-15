@@ -68,8 +68,8 @@ async def on_ready():
     print('Bot ready!')
     print('Logged in as {0.user.name}'.format(bot))
 
-    game = discord.Game("Maintenance")
-    await bot.change_presence(status=discord.Status.do_not_disturb, activity=game)
+    #game = discord.Game("Maintenance")
+    #await bot.change_presence(status=discord.Status.do_not_disturb, activity=game)
 
     # Obtain the guild
     bot.agdg = bot.get_guild(121565307515961346)
