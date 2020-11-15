@@ -16,6 +16,10 @@ from cogs.utils.db import Table
 
 bot = commands.Bot(command_prefix='>')
 
+intents = discord.Intents.default()
+intents.presences = False
+intents.members = True
+
 initial_extensions = ['cogs.owner',
                       'cogs.rolekeeper']
                     # 'cogs.tags
