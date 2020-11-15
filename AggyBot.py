@@ -14,11 +14,12 @@ from discord.ext import commands
 from cogs.utils import checks, context, db
 from cogs.utils.db import Table
 
-bot = commands.Bot(command_prefix='>')
-
 intents = discord.Intents.default()
+intents.typing = False;
 intents.presences = False
 intents.members = True
+
+bot = commands.Bot(command_prefix='>', intents = intents)
 
 initial_extensions = ['cogs.owner',
                       'cogs.rolekeeper']
