@@ -1,23 +1,9 @@
 # -*- coding: utf-8 -*-
 
 """
-The MIT License (MIT)
-Copyright (c) 2017 Rapptz
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-the rights to use, copy, modify, merge, publish, distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-DEALINGS IN THE SOFTWARE.
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.
 """
 
 # These are just things that allow me to make tables for PostgreSQL easier
@@ -102,7 +88,7 @@ class Datetime(SQLType):
 
     def to_sql(self):
         if self.timezone:
-            return 'TIMESTAMP WITH TIMEZONE'
+            return 'TIMESTAMP WITH TIME ZONE'
         return 'TIMESTAMP'
 
 class Double(SQLType):
@@ -359,9 +345,6 @@ class Column:
                 builder.append("(%s)" % default)
         elif self.unique:
             builder.append('UNIQUE')
-        elif self.primary_key:
-            builder.append('PRIMARY KEY')
-
         if not self.nullable:
             builder.append('NOT NULL')
 
@@ -498,9 +481,12 @@ class Table(metaclass=TableMeta):
     @classmethod
     async def create_pool(cls, uri, **kwargs):
         """Sets up and returns the PostgreSQL connection pool that is used.
+
         .. note::
+
             This must be called at least once before doing anything with the tables.
             And must be called on the ``Table`` class.
+
         Parameters
         -----------
         uri: str
@@ -532,14 +518,17 @@ class Table(metaclass=TableMeta):
     @classmethod
     def write_migration(cls, *, directory='migrations'):
         """Writes the migration diff into the data file.
+
         Note
         ------
         This doesn't actually commit/do the migration.
         To do so, use :meth:`migrate`.
+
         Returns
         --------
         bool
             ``True`` if a migration was written, ``False`` otherwise.
+
         Raises
         -------
         RuntimeError
@@ -587,6 +576,7 @@ class Table(metaclass=TableMeta):
     @classmethod
     async def migrate(cls, *, directory='migrations', index=-1, downgrade=False, verbose=False, connection=None):
         """Actually run the latest migration pointed by the data file.
+
         Parameters
         -----------
         directory: str
@@ -633,6 +623,7 @@ class Table(metaclass=TableMeta):
     @classmethod
     async def create(cls, *, directory='migrations', verbose=False, connection=None, run_migrations=True):
         """Creates the database and manages migrations, if any.
+
         Parameters
         -----------
         directory: str
@@ -644,6 +635,7 @@ class Table(metaclass=TableMeta):
             the internal pool.
         run_migrations: bool
             Whether to run migrations at all.
+
         Returns
         --------
         Optional[bool]
@@ -723,6 +715,7 @@ class Table(metaclass=TableMeta):
     @classmethod
     async def drop(cls, *, directory='migrations', verbose=False, connection=None):
         """Drops the database and migrations, if any.
+
         Parameters
         -----------
         directory: str
@@ -767,7 +760,15 @@ class Table(metaclass=TableMeta):
             builder.append('IF NOT EXISTS')
 
         builder.append(cls.__tablename__)
-        builder.append('(%s)' % ', '.join(c._create_table() for c in cls.columns))
+        column_creations = []
+        primary_keys = []
+        for col in cls.columns:
+            column_creations.append(col._create_table())
+            if col.primary_key:
+                primary_keys.append(col.name)
+
+        column_creations.append('PRIMARY KEY (%s)' % ', '.join(primary_keys))
+        builder.append('(%s)' % ', '.join(column_creations))
         statements.append(' '.join(builder) + ';')
 
         # handle the index creations
@@ -836,12 +837,17 @@ class Table(metaclass=TableMeta):
 
     def diff(self, before):
         """Outputs the upgrade and downgrade path in JSON.
+
         This isn't necessarily good, but it outputs it in a format
         that allows the user to manually make edits if something is wrong.
+
         The following JSON schema is used:
+
         Note that every major key takes a list of objects as noted below.
+
         Note that add_column and drop_column automatically create and drop
         indices as necessary.
+
         changed_column_types:
             name: str [The column name]
             type: str [The new column type]
@@ -950,9 +956,15 @@ class Table(metaclass=TableMeta):
                 insert_column_diff(a, b)
 
             new_columns = self.columns[len(before.columns):]
-            added = [c._to_dict() for c in new_columns]
-            upgrade.setdefault('add_columns', []).extend(added)
-            downgrade.setdefault('remove_columns', []).extend(added)
+            add, remove = upgrade.setdefault('add_columns', []), downgrade.setdefault('remove_columns', [])
+            for column in new_columns:
+                as_dict = column._to_dict()
+                add.append(as_dict)
+                remove.append(as_dict)
+                if column.index:
+                    upgrade.setdefault('add_index', []).append({ 'name': column.name, 'index': column.index_name })
+                    downgrade.setdefault('drop_index', []).append({ 'name': column.name, 'index': column.index_name })
+
         elif len(self.columns) < len(before.columns):
             # check if we have fewer columns
             # this one is a little bit more complicated

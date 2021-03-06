@@ -1,13 +1,10 @@
-aiohttp==2.2.5
-async-timeout==2.0.0
-chardet==3.0.4
--e git+https://github.com/Rapptz/discord.py@rewrite#egg=discord.py
-dj-database-url==0.4.2
-Django==1.11.4
-gunicorn==19.7.1
-multidict==3.3.0
-psycopg2==2.7.3.1
-pytz==2017.2
-websockets==3.4
-whitenoise==3.3.0
-yarl==0.13.0
+git+https://github.com/Rapptz/discord.py@master
+git+https://github.com/Rapptz/discord-ext-menus@84caae8038d0d
+lxml
+psutil
+asyncpg>=0.12.0
+click
+parsedatetime
+lru_dict
+python-dateutil
+pygit2

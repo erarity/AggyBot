@@ -1,5 +1,7 @@
 from discord.ext import commands
 import asyncio
+import discord
+import io
 
 class _ContextDBAcquire:
     __slots__ = ('ctx', 'timeout')
@@ -22,7 +24,7 @@ class Context(commands.Context):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.pool = self.bot.pool
-        self.db = None
+        self._db = None
 
     async def entry_to_code(self, entries):
         width = max(len(a) for a, b in entries)
@@ -47,6 +49,13 @@ class Context(commands.Context):
     @property
     def session(self):
         return self.bot.session
+
+    @discord.utils.cached_property
+    def replied_reference(self):
+        ref = self.message.reference
+        if ref and isinstance(ref.resolved, discord.Message):
+            return ref.resolved.to_reference()
+        return None
 
     async def disambiguate(self, matches, entry):
         if len(matches) == 0:
@@ -83,6 +92,7 @@ class Context(commands.Context):
 
     async def prompt(self, message, *, timeout=60.0, delete_after=True, reacquire=True, author_id=None):
         """An interactive reaction confirmation dialog.
+
         Parameters
         -----------
         message: str
@@ -97,6 +107,7 @@ class Context(commands.Context):
         author_id: Optional[int]
             The member who should respond to the prompt. Defaults to the author of the
             Context's message.
+
         Returns
         --------
         Optional[bool]
@@ -153,21 +164,33 @@ class Context(commands.Context):
             return confirm
 
     def tick(self, opt, label=None):
-        emoji = '<:greenTick:330090705336664065>' if opt else '<:redTick:330090723011592193>'
+        lookup = {
+            True: '<:greenTick:330090705336664065>',
+            False: '<:redTick:330090723011592193>',
+            None: '<:greyTick:563231201280917524>',
+        }
+        emoji = lookup.get(opt, '<:redTick:330090723011592193>')
         if label is not None:
             return f'{emoji}: {label}'
         return emoji
 
-    async def _acquire(self, timeout):
-        if self.db is None:
-            self.db = await self.pool.acquire(timeout=timeout)
-        return self.db
+    @property
+    def db(self):
+        return self._db if self._db else self.pool
 
-    def acquire(self, *, timeout=None):
+    async def _acquire(self, timeout):
+        if self._db is None:
+            self._db = await self.pool.acquire(timeout=timeout)
+        return self._db
+
+    def acquire(self, *, timeout=300.0):
         """Acquires a database connection from the pool. e.g. ::
+
             async with ctx.acquire():
                 await ctx.db.execute(...)
+
         or: ::
+
             await ctx.acquire()
             try:
                 await ctx.db.execute(...)
@@ -178,22 +201,41 @@ class Context(commands.Context):
 
     async def release(self):
         """Releases the database connection from the pool.
+
         Useful if needed for "long" interactive commands where
         we want to release the connection and re-acquire later.
+
         Otherwise, this is called automatically by the bot.
         """
         # from source digging asyncpg source, releasing an already
         # released connection does nothing
 
-        if self.db is not None:
-            await self.bot.pool.release(self.db)
-            self.db = None
+        if self._db is not None:
+            await self.bot.pool.release(self._db)
+            self._db = None
 
     async def show_help(self, command=None):
         """Shows the help command for the specified command if given.
+
         If no command is given, then it'll show help for the current
         command.
         """
         cmd = self.bot.get_command('help')
         command = command or self.command.qualified_name
         await self.invoke(cmd, command=command)
+
+    async def safe_send(self, content, *, escape_mentions=True, **kwargs):
+        """Same as send except with some safe guards.
+
+        1) If the message is too long then it sends a file with the results instead.
+        2) If ``escape_mentions`` is ``True`` then it escapes mentions.
+        """
+        if escape_mentions:
+            content = discord.utils.escape_mentions(content)
+
+        if len(content) > 2000:
+            fp = io.BytesIO(content.encode())
+            kwargs.pop('file', None)
+            return await self.send(file=discord.File(fp, filename='message_too_long.txt'), **kwargs)
+        else:
+            return await self.send(content)
