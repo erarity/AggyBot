@@ -48,23 +48,33 @@ class Core(commands.Cog):
     @commands.command()
     async def color(self, ctx, col):
         # await ctx.send('Assigning color.')
-        colors = discord.utils.get(ctx.guild.roles, id=self.bot.colorsID)
-        skills = discord.utils.get(ctx.guild.roles, id=self.bot.skillsID)
+        colors = discord.utils.get(self.bot.agdg.roles, id=self.bot.colorsID)
+        skills = discord.utils.get(self.bot.agdg.roles, id=self.bot.skillsID)
         # await ctx.send('positions are c{} and s{}'.format(colors.position, skills.position))
 
         # Sort the list.
-        sorted_roles = sorted(ctx.guild.roles)
+        sorted_roles = sorted(self.bot.agdg.roles)
+
+        # Determine member (Allows for DMing the bot).
+        mem = None
+        if isinstance(ctx.channel, discord.DMChannel):
+            mem = self.bot.agdg.get_member(ctx.author.id)
+            if mem is None:
+                # Why are you using my bot, huh?
+                return
+        else:
+            mem = ctx.author
 
         # Iterate through the sublist
         for c in sorted_roles[skills.position + 1: colors.position]:
 
             if c.name.lower() == col.lower():
-                await ctx.author.add_roles(c)
+                await mem.add_roles(c)
 
                 # Members can only have one color, so check if they already have a color role and replace it.
                 for i in sorted_roles[skills.position + 1: colors.position]:
-                    if i in ctx.author.roles and i != c:
-                        await ctx.author.remove_roles(i)
+                    if i in mem.roles and i != c:
+                        await mem.remove_roles(i)
 
                 await ctx.message.add_reaction('✅')
                 return
@@ -74,7 +84,7 @@ class Core(commands.Cog):
     @commands.command()
     async def addskill(self, ctx, *skills):
 
-        skill_role = discord.utils.get(ctx.guild.roles, id=226331683996172288)
+        skill_role = discord.utils.get(self.bot.agdg.roles, id=226331683996172288)
 
         # Make all the args lowercase.
         roles_not_added = []
@@ -83,7 +93,7 @@ class Core(commands.Cog):
 
         # Iterate through the role sublist
         roles_to_add = []
-        sorted_roles = sorted(ctx.guild.roles)
+        sorted_roles = sorted(self.bot.agdg.roles)
         for s in sorted_roles[:skill_role.position]:
             if s.name.lower() in roles_not_added:
                 roles_to_add.append(s)
@@ -91,7 +101,7 @@ class Core(commands.Cog):
 
         # Add all of the successfully identified roles to the Member (and User -> Member if DM)
         if isinstance(ctx.channel, discord.DMChannel):
-            mem = ctx.guild.get_member(ctx.author.id)
+            mem = self.bot.agdg.get_member(ctx.author.id)
             if mem is not None:
                 await mem.add_roles(*roles_to_add)
         else:
@@ -114,7 +124,7 @@ class Core(commands.Cog):
         mem = None
         mem_roles = None
         if isinstance(ctx.channel, discord.DMChannel):
-            mem = ctx.guild.get_member(ctx.author.id)
+            mem = self.bot.agdg.get_member(ctx.author.id)
             if mem is None:
                 # Why are you using my bot, huh?
                 return
@@ -129,8 +139,8 @@ class Core(commands.Cog):
             roles_not_removed.append(s.lower())
 
         # Prep the server role list so that users can't remove special use roles.
-        sorted_list = sorted(ctx.guild.roles)
-        skill_role = discord.utils.get(ctx.guild.roles, id=self.bot.skillsID)
+        sorted_list = sorted(self.bot.agdg.roles)
+        skill_role = discord.utils.get(self.bot.agdg.roles, id=self.bot.skillsID)
         public_roles = sorted_list[:skill_role.position]
 
         # Iterate through the role sublist
@@ -213,6 +223,7 @@ class Core(commands.Cog):
 
     @commands.command()
     async def checkrole(self, ctx, *, arg1):
+        print('Value of guild.chunked is {}'.format(ctx.guild.chunked))
         for role in ctx.guild.roles:
             if role.name.lower() == arg1.lower():
                 await ctx.channel.send('There are {} users with the {} role.'.format(len(role.members), role.name))
@@ -263,7 +274,7 @@ class Core(commands.Cog):
     async def progress(self, ctx, *, cont):
 
         # Check if the author is progress muted or not
-        mute_role = discord.utils.get(ctx.guild.roles, id=426372445998546946)
+        mute_role = discord.utils.get(self.bot.agdg.roles, id=426372445998546946)
         for role in ctx.author.roles:
             if role == mute_role:
                 await ctx.message.add_reaction('❌')

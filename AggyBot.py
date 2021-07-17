@@ -94,7 +94,7 @@ class AggyBot(commands.Bot):
 
     @property
     def agdg(self):
-        print('GETTING THE GUILD @#Q)(%@#%()*@#()%@*#%)*@#)(%')
+        # print('GETTING THE GUILD @#Q)(%@#%()*@#()%@*#%)*@#)(%')
         return self.get_guild(self.agdg_id)
 
     @property
