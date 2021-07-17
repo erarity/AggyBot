@@ -223,7 +223,10 @@ class Core(commands.Cog):
 
     @commands.command()
     async def checkrole(self, ctx, *, arg1):
-        print('Value of guild.chunked is {}'.format(ctx.guild.chunked))
+        if not ctx.guild.chunked:
+            print('Server was chunked due to a checkrole invocation.')
+            await ctx.guild.chunk()
+        # print('Value of guild.chunked is {}'.format(ctx.guild.chunked))
         for role in ctx.guild.roles:
             if role.name.lower() == arg1.lower():
                 await ctx.channel.send('There are {} users with the {} role.'.format(len(role.members), role.name))

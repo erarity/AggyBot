@@ -116,6 +116,11 @@ class AggyBot(commands.Bot):
 
         print(f'Details: {self.user} (ID: {self.user.id})')
 
+        # Chunk the guild? Not sure if needed, but should address issues with checkrole command apparently.
+        if not self.agdg.chunked:
+            print('Chunking the server on bot initiation.')
+            await self.agdg.chunk()
+
         # game = discord.Game("Maintenance")
         # await bot.change_presence(status=discord.Status.do_not_disturb, activity=game)
 
